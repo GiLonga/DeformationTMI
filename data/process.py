@@ -12,8 +12,8 @@ class Processing():
     Size: Number of points [int] to resize the mesh.
     """
 
-    def __init__(self, size):
-        self.remeshing_size = size
+    def __init__(self, remeshing_size):
+        self.min_n_samples = remeshing_size
         self.vertexlist, self.faceslist  = self.load_mesh()
 
     def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
@@ -57,6 +57,9 @@ class Processing():
         """
         for i,vertices,faces in enumerate(self.vertexlist, self.facelist):
 
+            vetrex_list = []
+            faces_list = []
+
             if not vertices.flags.f_contiguous:
                 vertices = np.asfortranarray(vertices)
 
@@ -69,11 +72,10 @@ class Processing():
             rhigh = RMTMesh(vertices, faces)
             rhigh.make_manifold()
 
-            rlow = rhigh.remesh(min_n_samples)
+            rlow = rhigh.remesh(self.min_n_samples)
             rlow.clean_up()
 
-            self._rhigh = rhigh
-            self._rlow = rlow
-            self._baryc_map = rlow.baryc_map(vertices)
+            vetrex_list.append(rlow.vertices)
+            faces_list.append(rlow.triangles)
 
-            return TriangleMesh(np.array(rlow.vertices), np.array(rlow.triangles))
+            return vetrex_list, faces_list
