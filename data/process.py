@@ -2,6 +2,7 @@ import os
 import trimesh
 import numpy as np
 from PyRMT import RMTMesh
+from utils.shape_transfer import shape_transfer
 
 class Processing():
     """
@@ -78,4 +79,27 @@ class Processing():
             vetrex_list.append(rlow.vertices)
             faces_list.append(rlow.triangles)
 
-            return vetrex_list, faces_list
+        return vetrex_list, faces_list
+    
+    def shape_align(self, vertices, faces, index):
+        """Align the mesh to a target.
+
+        Parameters
+        ----------
+        vertices : numpy.array
+            Array containing the vertices of a mesh.
+        faces : numpy.array 
+            Array containing the faces of a mesh.
+        index : int
+            key int to name the shape.
+        """   
+        target_shape = "PATH_TO_TARGET"
+        shape_transfer(target_shape, vertices, faces, index)
+    
+    def process(self):
+        """
+        Pipeline to register the meshes to the target one.
+        """   
+        vl,fl = self.remeshing()
+        for i,v,f in enumerate(vl,fl):
+            self.shape_align(v, f, i)
