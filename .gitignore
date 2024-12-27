@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project folders
+/data/raw_data
+/data/processed_data
+/data/template

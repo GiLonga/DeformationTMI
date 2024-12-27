@@ -26,6 +26,8 @@ class Patient():
         self.or_isocenters = self.load_isocenters()
         self.or_fields = self.load_fields()
         self.p2p=None
+        self.iso_RMSE=None
+        self.field_RMSE=None
         self.PLAN_data = pydicom.dcmread(Plan_path)
 
         
