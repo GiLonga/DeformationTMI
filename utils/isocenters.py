@@ -1,6 +1,9 @@
 import numpy as np
 from src.TMIgeometry import Patient 
 class Geometry(Patient):
+    def init(self):
+        self.isocenters = None
+        self.fields = None
 
     def find_max_ptv(self):
         """
@@ -27,3 +30,31 @@ class Geometry(Patient):
         z = np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][2])
 
         return (x,y,z)
+    
+    def find_isocenters(self):
+        """
+        TO DO
+        """
+        iso_list=[]
+        iso_list.append(self.get_head_isocenter())
+
+        self.isocenters = iso_list
+        return
+    
+    def iso_rmse(self):
+        """
+        Calculate the rmse between the original isocenters and the predicted
+        """
+        return
+    
+    def field_rmse(self):
+        """
+        Calculate the rmse between the original fields and the predicted
+        """
+        return
+    
+    def rmse(self):
+        """
+        Calculate the rmse between the original patient geometry and the forcasted.
+        """
+        return self.iso_rmse() + self.field_rmse()
