@@ -75,15 +75,23 @@ class Patient():
 
         return
     
-    def calculate_keypoints(self,):
+    def set_keypoints(self, template):
         """
         Calculate the keypoints exploiting the p2p.
         """
 
         if self.p2p == None:
             ValueError("Before calculate keypoints, set a p2p")
-
+        self.keypoints = self.p2p[template.keypoints]
         return
+
+    def get_keypoints(self, template):
+        """
+        Return the keypoints.
+        """
+        if self.keypoints == None:
+            ValueError("Before get keypoints, calculate them with set_keypoints")
+        return self.keypoints
     
     def find_ribs_border(self,):
         """
