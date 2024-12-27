@@ -93,7 +93,7 @@ class Patient():
             ValueError("Before get keypoints, calculate them with set_keypoints")
         return self.keypoints
     
-    def find_ribs_border(self,):
+    def find_ribs_edge(self,):
         """
         Find the min point in term of z coordinate, usefult to set the field on the ribs.
         """
