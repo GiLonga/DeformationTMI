@@ -1,4 +1,4 @@
-
+from utils.mapping import knn_query_normals 
 
 class Patient():
     """Patient Class.
@@ -61,12 +61,17 @@ class Patient():
         """
         return
     
-    def load_p2p(self,):
+    def set_p2p(self, template):
         """
         Return the p2p calculated in the spectral section.
         """
         if self.template:
             ValueError("You can't calculate a point to point map for the Template. Check it!")
+
+        p2p_21 = knn_query_normals(template.mesh, self.mesh,
+                                        template.mesh.vertex_normals, self.mesh.vertex_normals,
+                                        k_base=40, n_jobs=10) 
+        self.p2p = p2p_21
 
         return
     
