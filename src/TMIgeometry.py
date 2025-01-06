@@ -1,4 +1,5 @@
-
+from utils.mapping import knn_query_normals 
+import pydicom
 
 class Patient():
     """Patient Class.
@@ -18,14 +19,16 @@ class Patient():
     template: Bool,
         To set as true if the instance is the template.
     """
-    def init(self, PTV, template=False):
+    def __init__(self, PTV, Plan_path, template=False):
         self.mesh = PTV
+        self.template=template
         self.keypoints = self.set_keypoints()
         self.or_isocenters = self.load_isocenters()
         self.or_fields = self.load_fields()
         self.p2p=None
-        self.template=template
-        return
+        self.PLAN_data = pydicom.dcmread(Plan_path)
+
+        
     
     def set_keypoints(self,):
         """
@@ -44,14 +47,23 @@ class Patient():
               2972,  4055, 16249,  4330, 16175, 17162,  4532,  3627,  3625, 2971, #feet as minimum point of PTV
               ]
         else:
-            None
+            keypoints=None
         return keypoints
     
     def load_isocenters(self,):
         """
         This function set the real isocenters, ideally loading them from the dicom file.
         """
-        return
+        # Access the value at tag (300A, 012C)
+        isocenter_position = []
+        tag = (0x300a, 0x00b0)
+        if tag in self.PLAN_data:
+            for beam in self.PLAN_data[tag]:
+                isocenter_position.append(beam.ControlPointSequence[0].IsocenterPosition)
+        else:
+            print(f"Tag (0x300a, 0x00b0) not found in the DICOM file.")
+
+        return isocenter_position
     
     def load_fields(self,):
         """
@@ -61,26 +73,40 @@ class Patient():
         """
         return
     
-    def load_p2p(self,):
+    def set_p2p(self, template):
         """
         Return the p2p calculated in the spectral section.
         """
         if self.template:
             ValueError("You can't calculate a point to point map for the Template. Check it!")
 
+        p2p_21 = knn_query_normals(template.mesh, self.mesh,
+                                        template.mesh.vertex_normals, self.mesh.vertex_normals,
+                                        k_base=40, n_jobs=10) 
+        self.p2p = p2p_21
+
         return
     
-    def calculate_keypoints(self,):
+    def find_isocenters(self, template):
         """
         Calculate the keypoints exploiting the p2p.
         """
 
         if self.p2p == None:
             ValueError("Before calculate keypoints, set a p2p")
+        if self.template:
+            ValueError("Can't calculate the keypoints for the template")
+        return self.p2p[template.keypoints]
 
-        return
+    def get_keypoints(self, template):
+        """
+        Return the keypoints.
+        """
+        if self.keypoints == None:
+            ValueError("Before get keypoints, calculate them with set_keypoints")
+        return self.keypoints
     
-    def find_ribs_border(self,):
+    def find_ribs_edge(self,):
         """
         Find the min point in term of z coordinate, usefult to set the field on the ribs.
         """
