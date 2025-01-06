@@ -1,8 +1,10 @@
 import numpy as np
-from src.TMIgeometry import Patient 
+from src.TMIgeometry import Patient
+from sklearn.metrics import mean_squared_error
+
 class IsoGeometry(Patient):
-    def init(self):
-        super().__init__()
+    def init(self, patient_instance, ):
+        self.__dict__ = patient_instance.__dict__.copy()
         self.isocenters = None
         self.fields = None
         self.y=np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][1])
@@ -66,7 +68,10 @@ class IsoGeometry(Patient):
         """
         Calculate the rmse between the original isocenters and the predicted
         """
-        return
+        
+        rmse = mean_squared_error(self.isocenters, self.or_isocenters, squared=False)
+
+        return  rmse
     
     def field_rmse(self):
         """
