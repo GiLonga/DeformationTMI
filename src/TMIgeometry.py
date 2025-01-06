@@ -87,7 +87,7 @@ class Patient():
 
         return
     
-    def find_keypoints(self, template):
+    def find_isocenters(self, template):
         """
         Calculate the keypoints exploiting the p2p.
         """
@@ -96,8 +96,7 @@ class Patient():
             ValueError("Before calculate keypoints, set a p2p")
         if self.template:
             ValueError("Can't calculate the keypoints for the template")
-        self.keypoints = self.p2p[template.keypoints]
-        return
+        return self.p2p[template.keypoints]
 
     def get_keypoints(self, template):
         """
