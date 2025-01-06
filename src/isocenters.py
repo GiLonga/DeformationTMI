@@ -1,15 +1,19 @@
 import numpy as np
-from src.TMIgeometry import Patient 
-class Geometry(Patient):
-    def init(self):
+from src.TMIgeometry import Patient
+from sklearn.metrics import mean_squared_error
+
+class IsoGeometry(Patient):
+    def __init__(self, patient_instance:Patient, ):
+        self.__dict__ = patient_instance.__dict__.copy()
         self.isocenters = None
         self.fields = None
+        self.y=np.mean(self.mesh.vertices[self.find_max_ptv()][1])
 
     def find_max_ptv(self):
         """
         Find the 10th max points in term of z coordinate, usefult to set the field on the head.
         """
-        x, y, z = zip(self.mesh.vertices)
+        z = self.mesh.vertices[:,2]
         top_10_head=np.argsort(z)[-10:]
         return top_10_head
 
@@ -17,7 +21,7 @@ class Geometry(Patient):
         """
         Find the 10th min points in term of z coordinate, usefult to set the field on the head.
         """
-        x, y, z = zip(self.mesh.vertices)
+        z = self.mesh.vertices[:,2]
         top_10_head=np.argsort(z)[:10]
         return top_10_head
 
@@ -26,10 +30,29 @@ class Geometry(Patient):
         Find the head isocenter from the keypoints
         """
         x=np.mean(self.mesh.vertices[self.keypoints[0]][0]+self.mesh.vertices[self.keypoints[1]][0])
-        y= np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][1])
+        #y= np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][1])
         z = np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][2])
 
-        return (x,y,z)
+        return (x,self.y,z)
+
+    def get_body_isocenters(self,):
+        """
+        Find the body isocenters from the keypoints
+        """
+        body_list = []
+        return body_list
+    
+    def get_legs_isocenters(self,):
+        """
+
+        """
+        return
+    
+    def get_arms_isocenters(self,):
+        """
+        
+        """
+        return
     
     def find_isocenters(self):
         """
@@ -37,7 +60,7 @@ class Geometry(Patient):
         """
         iso_list=[]
         iso_list.append(self.get_head_isocenter())
-
+        iso_list = iso_list + self.get_body_isocenters()
         self.isocenters = iso_list
         return
     
@@ -45,7 +68,10 @@ class Geometry(Patient):
         """
         Calculate the rmse between the original isocenters and the predicted
         """
-        return
+        
+        rmse = mean_squared_error(self.isocenters, self.or_isocenters, squared=False)
+
+        return  rmse
     
     def field_rmse(self):
         """
@@ -57,4 +83,5 @@ class Geometry(Patient):
         """
         Calculate the rmse between the original patient geometry and the forcasted.
         """
-        return self.iso_rmse() + self.field_rmse()
+        print("The total RMSE is: ", self.iso_rmse() + self.field_rmse())
+        return self.iso_RMSE + self.field_RMSE
