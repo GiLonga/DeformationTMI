@@ -3,17 +3,17 @@ from src.TMIgeometry import Patient
 from sklearn.metrics import mean_squared_error
 
 class IsoGeometry(Patient):
-    def init(self, patient_instance, ):
+    def __init__(self, patient_instance:Patient, ):
         self.__dict__ = patient_instance.__dict__.copy()
         self.isocenters = None
         self.fields = None
-        self.y=np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][1])
+        self.y=np.mean(self.mesh.vertices[self.find_max_ptv()][1])
 
     def find_max_ptv(self):
         """
         Find the 10th max points in term of z coordinate, usefult to set the field on the head.
         """
-        x, y, z = zip(self.mesh.vertices)
+        z = self.mesh.vertices[:,2]
         top_10_head=np.argsort(z)[-10:]
         return top_10_head
 
@@ -21,7 +21,7 @@ class IsoGeometry(Patient):
         """
         Find the 10th min points in term of z coordinate, usefult to set the field on the head.
         """
-        x, y, z = zip(self.mesh.vertices)
+        z = self.mesh.vertices[:,2]
         top_10_head=np.argsort(z)[:10]
         return top_10_head
 
