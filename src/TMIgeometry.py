@@ -30,6 +30,7 @@ class Patient():
         self.iso_RMSE=None
         self.field_RMSE=None
         self.arms = None
+        self.N_keypoints = None
 
         
     
@@ -90,25 +91,26 @@ class Patient():
         if self.template:
             ValueError("You can't calculate a point to point map for the Template. Check it!")
 
-        p2p_21 = knn_query_normals(template.mesh, self.mesh,
+        p2p_21 = knn_query_normals(template.mesh.vertices, self.mesh.vertices,
                                         template.mesh.vertex_normals, self.mesh.vertex_normals,
                                         k_base=40, n_jobs=10) 
         self.p2p = p2p_21
 
         return
     
-    def find_isocenters(self, template):
+    def find_keypoints(self, template):
         """
         Calculate the keypoints exploiting the p2p.
         """
 
-        if self.p2p == None:
+        if self.p2p is None:
             ValueError("Before calculate keypoints, set a p2p")
         if self.template:
             ValueError("Can't calculate the keypoints for the template")
-        return self.p2p[template.keypoints]
+        self.N_keypoints = self.p2p[template.keypoints]
+        return self.N_keypoints
 
-    def get_keypoints(self, template):
+    def get_keypoints(self,):
         """
         Return the keypoints.
         """

@@ -22,16 +22,16 @@ class IsoGeometry(Patient):
         Find the 10th min points in term of z coordinate, usefult to set the field on the head.
         """
         z = self.mesh.vertices[:,2]
-        top_10_head=np.argsort(z)[:10]
-        return top_10_head
+        bottom_10_legs=np.argsort(z)[:10]
+        return bottom_10_legs
 
     def get_head_isocenter(self, ):
         """
         Find the head isocenter from the keypoints
         """
-        x=np.mean(self.mesh.vertices[self.keypoints[0]][0]+self.mesh.vertices[self.keypoints[1]][0])
+        x=np.mean(self.mesh.vertices[self.N_keypoints[0]][0]+self.mesh.vertices[self.N_keypoints[1]][0])
         #y= np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][1])
-        z = np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][2])
+        z = np.mean(self.mesh.vertices[self.find_max_ptv()][2])
 
         return (x,self.y,z)
 
@@ -46,13 +46,13 @@ class IsoGeometry(Patient):
         """
 
         """
-        return
+        return []
     
     def get_arms_isocenters(self,):
         """
         
         """
-        return
+        return []
     
     def find_isocenters(self):
         """
@@ -62,7 +62,7 @@ class IsoGeometry(Patient):
         iso_list.append(self.get_head_isocenter())
         iso_list = iso_list + self.get_body_isocenters()
         self.isocenters = iso_list
-        return
+        return self.isocenters
     
     def iso_rmse(self): #Can be switched between getter and setter
         """
