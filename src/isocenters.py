@@ -64,12 +64,13 @@ class IsoGeometry(Patient):
         self.isocenters = iso_list
         return
     
-    def iso_rmse(self):
+    def iso_rmse(self): #Can be switched between getter and setter
         """
         Calculate the rmse between the original isocenters and the predicted
         """
         
         rmse = mean_squared_error(self.isocenters, self.or_isocenters, squared=False)
+        self.iso_RMSE = rmse
 
         return  rmse
     

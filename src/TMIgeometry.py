@@ -29,6 +29,7 @@ class Patient():
         self.p2p=None
         self.iso_RMSE=None
         self.field_RMSE=None
+        self.arms = None
 
         
     
@@ -63,9 +64,14 @@ class Patient():
         tag = (0x300a, 0x00b0)
         if tag in self.PLAN_data:
             for beam in self.PLAN_data[tag]:
-                isocenter_position.append(beam.ControlPointSequence[0].IsocenterPosition)
+                new_iso = beam.ControlPointSequence[0].IsocenterPosition
+                if new_iso not in isocenter_position:
+                    isocenter_position.append(new_iso)
+
+        if len(isocenter_position)==6:
+            self.arms = True
         else:
-            print(f"Tag (0x300a, 0x00b0) not found in the DICOM file.")
+            self.arms = False
 
         return isocenter_position
     
