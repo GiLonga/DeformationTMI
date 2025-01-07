@@ -67,14 +67,15 @@ class IsoGeometry(Patient):
         return legs_list
     
     
-    def find_isocenters(self):
+    def find_isocenters(self, arms):
         """
         TO DO
         """
         iso_list=[]
         iso_list.append(self.get_head_isocenter())
         iso_list = iso_list + self.get_body_isocenters()
-        iso_list = iso_list + self.get_arms_isocenters()
+        if arms:
+            iso_list = iso_list + self.get_arms_isocenters()
         iso_list = iso_list + self.get_legs_isocenters()
         self.isocenters = iso_list
         return self.isocenters
