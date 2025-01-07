@@ -7,14 +7,14 @@ class IsoGeometry(Patient):
         self.__dict__ = patient_instance.__dict__.copy()
         self.isocenters = None
         self.fields = None
-        self.y=np.mean(self.mesh.vertices[self.find_max_ptv()][1])
+        self.y=np.mean(self.mesh.vertices[self.find_max_ptv()][:,1])
 
     def find_max_ptv(self):
         """
         Find the 10th max points in term of z coordinate, usefult to set the field on the head.
         """
         z = self.mesh.vertices[:,2]
-        top_10_head=np.argsort(z)[-10:]
+        top_10_head=np.argsort(z)[-15:]
         return top_10_head
 
     def find_min_ptv(self, ):
@@ -29,30 +29,43 @@ class IsoGeometry(Patient):
         """
         Find the head isocenter from the keypoints
         """
-        x=np.mean(self.mesh.vertices[self.N_keypoints[0]][0]+self.mesh.vertices[self.N_keypoints[1]][0])
+        x=(self.mesh.vertices[self.N_keypoints[10]][0]+self.mesh.vertices[self.N_keypoints[11]][0])/2
         #y= np.mean(self.mesh.vertices[self.find_max_ptv(self.mesh)][1])
-        z = np.mean(self.mesh.vertices[self.find_max_ptv()][2])
+        z = (self.mesh.vertices[self.N_keypoints[10]][2]+self.mesh.vertices[self.N_keypoints[11]][2])/2
 
         return (x,self.y,z)
 
     def get_body_isocenters(self,):
         """
-        Find the body isocenters from the keypoints
+        Find the body's isocenters from the keypoints
         """
         body_list = []
-        return body_list
-    
-    def get_legs_isocenters(self,):
-        """
+        x_shoulder = (self.mesh.vertices[self.N_keypoints[15]][0]+self.mesh.vertices[self.N_keypoints[16]][0])/2
+        z_shoulder = (self.mesh.vertices[self.N_keypoints[15]][2]+self.mesh.vertices[self.N_keypoints[16]][2])/2
+        body_list.append((x_shoulder,self.y,z_shoulder))
 
-        """
-        return []
+        x_pelvis = (self.mesh.vertices[self.N_keypoints[18]][0]+(self.mesh.vertices[self.N_keypoints[20]][0]+self.mesh.vertices[self.N_keypoints[21]][0])/2)/2
+        z_pelvis = (self.mesh.vertices[self.N_keypoints[17]][2]+self.mesh.vertices[self.N_keypoints[18]][2])/2
+        body_list.append((x_pelvis,self.y,z_pelvis))
+        return body_list
     
     def get_arms_isocenters(self,):
         """
-        
+        Find the arms' isocenters from the keypoints
         """
-        return []
+        arms_list = []
+        arms_list.append(self.mesh.vertices[self.N_keypoints[20]])
+        arms_list.append(self.mesh.vertices[self.N_keypoints[21]])
+        return arms_list
+    
+    def get_legs_isocenters(self,):
+        """
+        Find the legs' isocenters from the keypoints
+        """
+        legs_list = []
+        legs_list.append(self.mesh.vertices[self.N_keypoints[19]])
+        return legs_list
+    
     
     def find_isocenters(self):
         """
@@ -61,6 +74,8 @@ class IsoGeometry(Patient):
         iso_list=[]
         iso_list.append(self.get_head_isocenter())
         iso_list = iso_list + self.get_body_isocenters()
+        iso_list = iso_list + self.get_arms_isocenters()
+        iso_list = iso_list + self.get_legs_isocenters()
         self.isocenters = iso_list
         return self.isocenters
     

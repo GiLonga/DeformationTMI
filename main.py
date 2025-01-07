@@ -19,6 +19,8 @@ if __name__ == "__main__":
     print(pat0.find_max_ptv())
     print(pat0.find_isocenters())
 
-    plot_isocenters(pat.mesh, pat0.isocenters, )
+    plot_isocenters(pat.mesh, pat0.isocenters,)
+    #plot_isocenters(pat.mesh, [pat.mesh.vertices[pat.N_keypoints[21]]], ) #TO CHECK PREDICTED KEYPOINTS
+    #plot_isocenters(temp_pat.mesh, [temp_pat.mesh.vertices[temp_pat.keypoints[16]]], ) #TO CHECK ORIGINAL KEYPOINTS
     print("OK")
     

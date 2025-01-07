@@ -91,8 +91,8 @@ class Patient():
         if self.template:
             ValueError("You can't calculate a point to point map for the Template. Check it!")
 
-        p2p_21 = knn_query_normals(template.mesh.vertices, self.mesh.vertices,
-                                        template.mesh.vertex_normals, self.mesh.vertex_normals,
+        p2p_21 = knn_query_normals(self.mesh.vertices, template.mesh.vertices,
+                                        self.mesh.vertex_normals, template.mesh.vertex_normals, 
                                         k_base=40, n_jobs=10) 
         self.p2p = p2p_21
 
