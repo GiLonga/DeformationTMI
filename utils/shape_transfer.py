@@ -1,25 +1,23 @@
 import torch
 import torch.nn as nn
-BCE = nn.BCELoss()
 import open3d as o3d
-
-import torch.optim as optim
-
-import  yaml
-from easydict import EasyDict as edict
-
-from utils.benchmark_utils import setup_seed
-
 import numpy as np
-
-from model.nets import Deformation_Pyramid
-from model.loss import compute_truncated_chamfer_distance
+import torch.optim as optim
+from easydict import EasyDict as edict
 import argparse
+
+
+
+from wrap.utils.benchmark_utils import setup_seed
+from wrap.model.nets import Deformation_Pyramid
+from wrap.model.loss import compute_truncated_chamfer_distance
+
+BCE = nn.BCELoss()
 
 
 setup_seed(0)
 
-def shape_transfer(source_path, vertices, faces, index):
+def shape_transfer(source_path, target_path, index=0000):
 
     config = {
         "gpu_mode": True,
@@ -52,15 +50,8 @@ def shape_transfer(source_path, vertices, faces, index):
     else:
         config.device = torch.device('cpu')
 
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', type=str, help= 'Path to the src mesh.')
-    parser.add_argument('-t', type=str, help='Path to the tgt mesh.')
-    args = parser.parse_args()
-
-
     S=source_path
-
+    T=target_path
     """read S, sample pts"""
     src_mesh = o3d.io.read_triangle_mesh( S )
     src_mesh.compute_vertex_normals()
@@ -71,9 +62,7 @@ def shape_transfer(source_path, vertices, faces, index):
     #o3d.visualization.draw_geometries([src_mesh])
 
     """Create T, sample pts"""
-    tgt_mesh = o3d.geometry.TriangleMesh()
-    tgt_mesh.vertices = o3d.utility.Vector3dVector(vertices)
-    tgt_mesh.triangles = o3d.utility.Vector3iVector(faces)
+    tgt_mesh = o3d.io.read_triangle_mesh( T )
     tgt_mesh.compute_vertex_normals()
     pcd2 =  tgt_mesh.sample_points_uniformly(number_of_points=config.samples)
     tgt_pcd = np.asarray(pcd2.points, dtype=np.float32)
@@ -166,4 +155,4 @@ def shape_transfer(source_path, vertices, faces, index):
     #o3d.visualization.draw_geometries([src_mesh])
 
     """dump results"""
-    o3d.io.write_triangle_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/" + f"mesh_{i}" + ".ply", src_mesh)
+    o3d.io.write_triangle_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/" + f"processed_patient_{index}" + ".off", src_mesh)

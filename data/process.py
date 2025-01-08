@@ -1,8 +1,14 @@
 import os
 import trimesh
 import numpy as np
-from PyRMT import RMTMesh
+import sys
+import re
+import open3d as o3d
+#from PyRMT import RMTMesh
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
 from utils.shape_transfer import shape_transfer
+
+
 
 class Processing():
     """
@@ -16,6 +22,7 @@ class Processing():
     def __init__(self, remeshing_size):
         self.min_n_samples = remeshing_size
         self.vertexlist, self.faceslist  = self.load_mesh()
+        self.template_v, self.template_f = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
 
     def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
         """Load the meshes from a folder.
@@ -81,20 +88,20 @@ class Processing():
 
         return vetrex_list, faces_list
     
-    def shape_align(self, vertices, faces, index):
-        """Align the mesh to a target.
+    def shape_align(self, source_path= "", target_path ="/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off" ):
+        """Align the mesh to a Template.
 
         Parameters
         ----------
-        vertices : numpy.array
-            Array containing the vertices of a mesh.
-        faces : numpy.array 
-            Array containing the faces of a mesh.
-        index : int
-            key int to name the shape.
+        source_path : str
+            Path to the mesh to align.
+        target_path : str 
+            Path to the mesh Template.
         """   
-        target_shape = "PATH_TO_TARGET"
-        shape_transfer(target_shape, vertices, faces, index)
+        matches = re.findall(r'\d+', source_path)
+        index = matches[-1] if matches else 0000
+        shape_transfer(source_path, target_path, index)
+        return
     
     def process(self):
         """
@@ -103,3 +110,9 @@ class Processing():
         vl,fl = self.remeshing()
         for i,v,f in enumerate(vl,fl):
             self.shape_align(v, f, i)
+        return
+    
+if __name__ == "__main__":
+    process = Processing(20000)
+    #process.process()
+    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/raw_data/PAT_4.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off")
