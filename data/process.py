@@ -108,18 +108,22 @@ class Processing():
     
     def normalize_mesh(self):
         """
-        Normalize the area of the mesh.
+        Normalize the area and shift the mesh.
         """
         for i,(vertices,faces) in enumerate(zip(self.vertexlist, self.faceslist)):
             mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
-            alpha = sqrtarea(mesh)
-            shift = center_mass(mesh)
-            mesh = translate(shift)
-            mesh.vertices = vertices / alpha
             
+            alpha = sqrtarea(mesh)
+            mesh.vertices = vertices / alpha
+
+            shift = center_mass(mesh)
+            mesh = translate(mesh, -shift)
+
             self.alphalist.append(alpha)
             self.shiftlist.append(shift)
+
             igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Pat_Norm{i+4}.off"), mesh.vertices, faces)
+
         return
     
     def reverse_normalize_mesh(self):
