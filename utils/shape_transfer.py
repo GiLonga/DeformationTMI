@@ -3,11 +3,13 @@ import torch.nn as nn
 import open3d as o3d
 import numpy as np
 import torch.optim as optim
+import sys
+import os
 from easydict import EasyDict as edict
 import argparse
 
 
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
 from wrap.utils.benchmark_utils import setup_seed
 from wrap.model.nets import Deformation_Pyramid
 from wrap.model.loss import compute_truncated_chamfer_distance
@@ -22,12 +24,12 @@ def shape_transfer(source_path, target_path, index=0000):
     config = {
         "gpu_mode": True,
 
-        "iters": 20000,
+        "iters": 2000,
         "lr": 0.01,
         "max_break_count": 15,
-        "break_threshold_ratio": 0.000001,
+        "break_threshold_ratio": 0.001,
 
-        "samples": 20000,
+        "samples": 10000,
 
         "motion_type": "Sim3",
         "rotation_format": "euler",
@@ -46,7 +48,8 @@ def shape_transfer(source_path, target_path, index=0000):
     config = edict(config)
 
     if config.gpu_mode:
-        config.device = torch.cuda.current_device()
+        #config.device = torch.cuda.current_device()
+        config.device = torch.cuda.set_device(1)
     else:
         config.device = torch.device('cpu')
 
@@ -145,7 +148,7 @@ def shape_transfer(source_path, target_path, index=0000):
 
 
 
-    """warp-original mesh verttices"""
+    """warp-original mesh vertices"""
     NDP.gradient_setup(optimized_level=-1)
     mesh_vert = torch.from_numpy(np.asarray(src_mesh.vertices, dtype=np.float32)).to(config.device)
     mesh_vert = mesh_vert - src_mean
