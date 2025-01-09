@@ -6,7 +6,7 @@ import re
 import igl
 #from PyRMT import RMTMesh
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
-from utils.basic import sqrtarea
+from utils.basic import sqrtarea, center_mass, translate
 from utils.shape_transfer import shape_transfer
 
 
@@ -24,6 +24,7 @@ class Processing():
         self.vertexlist, self.faceslist  = self.load_mesh()
         self.template_v, self.template_f = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
         self.alphalist = []
+        self.shiftlist = []
         self.path_to_norm = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data"
 
     def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
@@ -112,9 +113,12 @@ class Processing():
         for i,(vertices,faces) in enumerate(zip(self.vertexlist, self.faceslist)):
             mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
             alpha = sqrtarea(mesh)
+            shift = center_mass(mesh)
+            mesh = translate(shift)
             mesh.vertices = vertices / alpha
             
             self.alphalist.append(alpha)
+            self.shiftlist.append(shift)
             igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Pat_Norm{i+4}.off"), mesh.vertices, faces)
         return
     
