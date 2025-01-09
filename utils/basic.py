@@ -73,4 +73,4 @@ def center_mass(mesh):
     center_mass : np.ndarray
         (3,) array of the center of mass
     """
-    return np.average(self.vertices, axis=0, weights=vertex_areas(mesh))
+    return np.average(mesh.vertices, axis=0, weights=vertex_areas(mesh))
