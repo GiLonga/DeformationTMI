@@ -3,11 +3,11 @@ import trimesh
 import numpy as np
 import sys
 import re
-import open3d as o3d
+import igl
 #from PyRMT import RMTMesh
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
+from utils.basic import sqrtarea
 from utils.shape_transfer import shape_transfer
-
 
 
 class Processing():
@@ -23,6 +23,8 @@ class Processing():
         self.min_n_samples = remeshing_size
         self.vertexlist, self.faceslist  = self.load_mesh()
         self.template_v, self.template_f = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
+        self.alphalist = []
+        self.path_to_norm = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data"
 
     def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
         """Load the meshes from a folder.
@@ -103,6 +105,30 @@ class Processing():
         shape_transfer(source_path, target_path, index)
         return
     
+    def normalize_mesh(self):
+        """
+        Normalize the area of the mesh.
+        """
+        for i,(vertices,faces) in enumerate(zip(self.vertexlist, self.faceslist)):
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+            alpha = sqrtarea(mesh)
+            mesh.vertices = vertices / alpha
+            
+            self.alphalist.append(alpha)
+            igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Pat_Norm{i+4}.off"), mesh.vertices, faces)
+        return
+    
+    def reverse_normalize_mesh(self):
+        """
+        Reverse the normalization of the mesh.
+        """
+        for i,vertices,faces in enumerate(self.vertexlist, self.faceslist):
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+            mesh.vertices = vertices * self.alphalist[i]
+            self.vertexlist[i] = mesh.vertices
+            igl.write_triangle_mesh(f"/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/processed_PAT_{i+4}.off", self.vertexlist[i], faces)
+        return
+
     def process(self):
         """
         Pipeline to register the meshes to the target one.
@@ -115,4 +141,6 @@ class Processing():
 if __name__ == "__main__":
     process = Processing(20000)
     #process.process()
-    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/raw_data/PAT_4.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off")
+    process.normalize_mesh()
+    print(process.alphalist)
+    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/Pat_Norm4.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")
