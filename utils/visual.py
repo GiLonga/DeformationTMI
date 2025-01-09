@@ -73,11 +73,11 @@ def plot_field(mesh, new_kp, original_kp=[],  ):
 
     fig.show()
 
-def plot_isocenters(mesh, new_iso, original_izo=[],):
+def plot_isocenters(vertices, new_iso, name='', original_izo=[],):
     """
     TO DO
     """
-    x, y, z = zip(*mesh.vertices)
+    x, y, z = zip(*vertices)
     x_s, y_s, z_s = zip(*new_iso)
 
     scatter_original = go.Scatter3d(
@@ -109,12 +109,12 @@ def plot_isocenters(mesh, new_iso, original_izo=[],):
     layout = go.Layout(scene=dict(aspectmode="data"))
     fig = go.Figure(data=[scatter_original, scatter_manual,], layout=layout)
 
-    hover_text = [f'Index: {index}' for index in range(len(mesh.vertices))]
+    hover_text = [f'Index: {index}' for index in range(len(vertices))]
     fig.data[0]['text'] = hover_text
 
 
-    pio.write_image(fig, '/home/ubuntu/giorgio_longari/DeformationTMI/output/plot.png')
-    pio.write_html(fig, '/home/ubuntu/giorgio_longari/DeformationTMI/output/plot.html')
+    pio.write_image(fig, f'/home/ubuntu/giorgio_longari/DeformationTMI/output/plot_{name}.png')
+    pio.write_html(fig, f'/home/ubuntu/giorgio_longari/DeformationTMI/output/plot_{name}.html')
     #fig.show()
 
     return True
