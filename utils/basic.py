@@ -74,3 +74,15 @@ def center_mass(mesh):
         (3,) array of the center of mass
     """
     return np.average(mesh.vertices, axis=0, weights=vertex_areas(mesh))
+
+def translate(mesh, t):
+    """
+    Translate the mesh.
+
+    Parameters
+    -----------------
+    t : np.ndarray
+        (3,) translation vector
+    """
+    mesh.vertices += np.asarray(t).squeeze()[None, :]
+    return mesh
