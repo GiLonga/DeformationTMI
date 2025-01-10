@@ -80,7 +80,16 @@ class Patient():
         NOTE: Is it the best choice? Maybe is better to calculate them as aperture? One coordinate to calculate, as it should be on a plane. To think about. 
         Maybe the isocenters are useful to be computed in the 3D domain, but of course not the fields.
         """
-        return
+        fields_aperture = []
+        tag = (0x300a, 0x00b0)
+        if tag in self.PLAN_data:
+            for beam in self.PLAN_data[tag]:
+                fields = beam.ControlPointSequence[0].BeamLimitingDevicePositionSequence
+                z_fields = fields[0].LeafJawPositions
+                x_fields = fields[1].LeafJawPositions
+                fields_aperture.append(z_fields)
+                fields_aperture.append(x_fields)
+        return fields_aperture
     
     def set_p2p(self, template):
         """
