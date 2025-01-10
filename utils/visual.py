@@ -135,3 +135,178 @@ def plot_isocenters(vertices, new_iso, name='', groundtruth_iso=[],):
     #fig.show()
 
     return True
+
+def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = [],):
+    """
+    TO DO: THIS IS WORKING ONLY FOR PATIENTS WITH ISOCENTERS ONT HTE ARMS AT THE MOMENT
+    """
+    x, y, z = zip(*vertices)
+    x_s, y_s, z_s = zip(*new_iso)
+
+    data=[]
+
+    scatter_isocenters = go.Scatter3d(
+        x=x,
+        y=y,
+        z=z,
+        mode='markers',
+        marker=dict(
+            size=1,  # Smaller size for the original points
+            color=z,  # Use z-coordinate for color gradient
+            colorscale='Portland',  # Choose a colorscale
+            opacity=0.8
+        ),
+        name="Mesh Points"
+    )
+    data.append(scatter_isocenters)
+    scatter_manual = go.Scatter3d(
+        x=x_s,
+        y=y_s,
+        z=z_s,
+        mode='markers',
+        marker=dict(
+            size=3,  # Larger size for manual points
+            color='black',  # Use a fixed color (e.g., red)
+            opacity=1.0
+        ),
+        name="Iso Coord"
+    )
+    data.append(scatter_manual)
+    if groundtruth_iso:
+        x_o, y_o, z_o = zip(*groundtruth_iso)
+        scatter_gt = go.Scatter3d(
+        x=x_o,
+        y=y_o,
+        z=z_o,
+        mode='markers',
+        marker=dict(
+            size=3,  # Larger size for manual points
+            color='blue',  # Use a fixed color (e.g., red)
+            opacity=1.0
+        ),
+        name="GT Iso Coord"
+        )   
+        
+        data.append(scatter_gt)
+
+    for i, iso in zip(range(0, 21, 4), new_iso):
+        if i == 12 :   #WE ARE MANAGING THE ARMS HERE
+            color = "purple"
+            rectangle_vertices = np.array([
+            (iso[0] +fields[i][0] , iso[1], iso[2]+fields[i+1][0]),  # Corner 1
+            (iso[0]+fields[i][1], iso[1],iso[2]+fields[i+1][0]),  # Corner 2 
+            (iso[0]+fields[i][1], iso[1],iso[2]+fields[i+1][1]),      # Corner 3
+            (iso[0]+fields[i][0], iso[1],iso[2]+fields[i+1][1]),  # Corner 4
+            (iso[0] +fields[i][0] , iso[1], iso[2]+fields[i+1][0])   # Close the rectangle
+            ])
+
+            # Create a line plot for the rectangle borders
+            rectangle_lines = go.Scatter3d(
+                x=rectangle_vertices[:, 0],
+                y=rectangle_vertices[:, 1],
+                z=rectangle_vertices[:, 2],
+                mode='lines',
+                line=dict(
+                    color=color,
+                    width=3
+                ),
+                name="Rectangle Border"
+            )
+            data.append(rectangle_lines)
+
+            
+
+        if i == 16 :   #WE ARE MANAGING THE ARMS HERE
+            color = "purple"
+            rectangle_vertices = np.array([
+            (iso[0] +fields[i-2][0] , iso[1], iso[2]+fields[i-1][0]),  # Corner 1
+            (iso[0]+fields[i-2][1], iso[1],iso[2]+fields[i-1][0]),  # Corner 2 
+            (iso[0]+fields[i-2][1], iso[1],iso[2]+fields[i-1][1]),      # Corner 3
+            (iso[0]+fields[i-2][0], iso[1],iso[2]+fields[i-1][1]),  # Corner 4
+            (iso[0] +fields[i-2][0] , iso[1], iso[2]+fields[i-1][0])   # Close the rectangle
+            ])
+
+            # Create a line plot for the rectangle borders
+            rectangle_lines = go.Scatter3d(
+                x=rectangle_vertices[:, 0],
+                y=rectangle_vertices[:, 1],
+                z=rectangle_vertices[:, 2],
+                mode='lines',
+                line=dict(
+                    color=color,
+                    width=3
+                ),
+                name="Rectangle Border"
+            )
+            data.append(rectangle_lines)
+        if i == 20 :   #WE ARE MANAGING THE ARMS HERE
+            for f in range(2):
+                idx = (i-4)+f*2
+                # Define rectangle corners in 3D space
+                rectangle_vertices = np.array([
+                    (iso[0] +fields[idx+1][0] , iso[1], iso[2]+fields[idx][0]),  # Corner 1
+                    (iso[0]+fields[idx+1][1], iso[1],iso[2]+fields[idx][0]),  # Corner 2 
+                    (iso[0]+fields[idx+1][1], iso[1],iso[2]+fields[idx][1]),      # Corner 3
+                    (iso[0]+fields[idx+1][0], iso[1],iso[2]+fields[idx][1]),  # Corner 4
+                    (iso[0] +fields[idx+1][0] , iso[1], iso[2]+fields[idx][0])   # Close the rectangle
+                ])
+
+                if f % 2 == 0:
+                    color = 'red'
+                else:
+                    color = 'blue'
+
+                # Create a line plot for the rectangle borders
+                rectangle_lines = go.Scatter3d(
+                    x=rectangle_vertices[:, 0],
+                    y=rectangle_vertices[:, 1],
+                    z=rectangle_vertices[:, 2],
+                    mode='lines',
+                    line=dict(
+                        color=color,
+                        width=3
+                    ),
+                    name="Rectangle Border"
+                )
+                data.append(rectangle_lines)
+        if i < 12:
+            for f in range(2):
+                idx = i+f*2
+                # Define rectangle corners in 3D space
+                rectangle_vertices = np.array([
+                    (iso[0] +fields[idx+1][0] , iso[1], iso[2]+fields[idx][0]),  # Corner 1
+                    (iso[0]+fields[idx+1][1], iso[1],iso[2]+fields[idx][0]),  # Corner 2 
+                    (iso[0]+fields[idx+1][1], iso[1],iso[2]+fields[idx][1]),      # Corner 3
+                    (iso[0]+fields[idx+1][0], iso[1],iso[2]+fields[idx][1]),  # Corner 4
+                    (iso[0] +fields[idx+1][0] , iso[1], iso[2]+fields[idx][0])   # Close the rectangle
+                ])
+
+                if f % 2 == 0:
+                    color = 'red'
+                else:
+                    color = 'blue'
+
+                # Create a line plot for the rectangle borders
+                rectangle_lines = go.Scatter3d(
+                    x=rectangle_vertices[:, 0],
+                    y=rectangle_vertices[:, 1],
+                    z=rectangle_vertices[:, 2],
+                    mode='lines',
+                    line=dict(
+                        color=color,
+                        width=3
+                    ),
+                    name="Rectangle Border"
+                )
+                data.append(rectangle_lines)
+
+    layout = go.Layout(scene=dict(aspectmode="data"))
+    fig = go.Figure(data=data, layout=layout)
+    hover_text = [f'Index: {index}' for index in range(len(vertices))]
+    fig.data[0]['text'] = hover_text
+
+    pio.write_image(fig, f'/home/ubuntu/giorgio_longari/DeformationTMI/output/plot_{name}.png')
+    pio.write_html(fig, f'/home/ubuntu/giorgio_longari/DeformationTMI/output/plot_{name}.html')
+    #fig.show()
+
+    return True
