@@ -19,14 +19,19 @@ class Patient():
     template: Bool,
         To set as true if the instance is the template.
     """
-    def __init__(self, PTV, Plan_path, template=False):
+    def __init__(self, PTV, Plan_path="", template=False):
         self.mesh = PTV
         self.template=template
+        self.arms = None
+        self.p2p=None
+        self.iso_RMSE=None
+        self.field_RMSE=None
+        self.N_keypoints = None
+        self.PLAN_data = pydicom.dcmread(Plan_path)
         self.keypoints = self.set_keypoints()
         self.or_isocenters = self.load_isocenters()
         self.or_fields = self.load_fields()
-        self.p2p=None
-        self.PLAN_data = pydicom.dcmread(Plan_path)
+
 
         
     
@@ -54,14 +59,18 @@ class Patient():
         """
         This function set the real isocenters, ideally loading them from the dicom file.
         """
-        # Access the value at tag (300A, 012C)
         isocenter_position = []
         tag = (0x300a, 0x00b0)
         if tag in self.PLAN_data:
             for beam in self.PLAN_data[tag]:
-                isocenter_position.append(beam.ControlPointSequence[0].IsocenterPosition)
+                new_iso = beam.ControlPointSequence[0].IsocenterPosition
+                if new_iso not in isocenter_position:
+                    isocenter_position.append(new_iso)
+
+        if len(isocenter_position) == 6:
+            self.arms = True
         else:
-            print(f"Tag (0x300a, 0x00b0) not found in the DICOM file.")
+            self.arms = False
 
         return isocenter_position
     
@@ -80,25 +89,26 @@ class Patient():
         if self.template:
             ValueError("You can't calculate a point to point map for the Template. Check it!")
 
-        p2p_21 = knn_query_normals(template.mesh, self.mesh,
-                                        template.mesh.vertex_normals, self.mesh.vertex_normals,
+        p2p_21 = knn_query_normals(self.mesh.vertices, template.mesh.vertices,
+                                        self.mesh.vertex_normals, template.mesh.vertex_normals, 
                                         k_base=40, n_jobs=10) 
         self.p2p = p2p_21
 
         return
     
-    def find_isocenters(self, template):
+    def find_keypoints(self, template):
         """
         Calculate the keypoints exploiting the p2p.
         """
 
-        if self.p2p == None:
+        if self.p2p is None:
             ValueError("Before calculate keypoints, set a p2p")
         if self.template:
             ValueError("Can't calculate the keypoints for the template")
-        return self.p2p[template.keypoints]
+        self.N_keypoints = self.p2p[template.keypoints]
+        return self.N_keypoints
 
-    def get_keypoints(self, template):
+    def get_keypoints(self,):
         """
         Return the keypoints.
         """
