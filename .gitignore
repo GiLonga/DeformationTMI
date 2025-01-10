@@ -174,3 +174,5 @@ cython_debug/
 /data/raw_data
 /data/processed_data
 /data/template
+/wrap
+/output

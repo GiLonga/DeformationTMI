@@ -6,8 +6,8 @@ path = r"/home/ubuntu/giorgio_longari/DeformationTMI/data/raw_data/RTPLAN004.dcm
 
 if __name__ == "__main__":
 
-    template = load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")
-    ptv0 = load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/rem_PTV_Tot_4_new.off")
+    template = load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off")
+    ptv0 = load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/mesh_4.ply")
     
     temp_pat= Patient(template, Plan_path = "/home/ubuntu/giorgio_longari/DeformationTMI/data/raw_data/RTPLAN001.dcm", template=True)
     pat = Patient(ptv0, path, )

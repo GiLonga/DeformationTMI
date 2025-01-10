@@ -1,5 +1,7 @@
 import trimesh
 import os
+from pyFM.mesh import geometry as geom
+import numpy as np
 
 def load_mesh(path="DeformationTMI/data/raw_data") -> list:
     """Load the meshes from a folder.
@@ -30,4 +32,57 @@ def load_mesh(path="DeformationTMI/data/raw_data") -> list:
         return vetrex_list,faces_list
     else: 
         mesh = trimesh.load(path, process=True)
+    return mesh
+
+def sqrtarea(mesh):
+    """
+    Square root of the area of a mesh.
+
+    Parameters
+    ----------
+    mesh : trimesh.base.Trimesh
+        mesh to compute the Area
+
+    Returns
+    -----------------
+    sqrtarea : float
+        square root of the area
+    """
+    if mesh.faces is None:
+        return None
+    faces_areas = geom.compute_faces_areas(mesh.vertices, mesh.faces)
+    return np.sqrt(faces_areas.sum())
+
+def vertex_areas(mesh):
+    """
+    per vertex area
+
+    Returns
+    -----------------
+    vertex_areas : np.ndarray
+        (n,) array of vertex areas
+    """
+    return geom.compute_vertex_areas(mesh.vertices, mesh.faces)
+
+def center_mass(mesh):
+    """
+    center of mass
+
+    Returns
+    -----------------
+    center_mass : np.ndarray
+        (3,) array of the center of mass
+    """
+    return np.average(mesh.vertices, axis=0, weights=vertex_areas(mesh))
+
+def translate(mesh, t):
+    """
+    Translate the mesh.
+
+    Parameters
+    -----------------
+    t : np.ndarray
+        (3,) translation vector
+    """
+    mesh.vertices += np.asarray(t).squeeze()[None, :]
     return mesh

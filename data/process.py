@@ -1,8 +1,14 @@
 import os
 import trimesh
 import numpy as np
-from PyRMT import RMTMesh
+import sys
+import re
+import igl
+#from PyRMT import RMTMesh
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
+from utils.basic import sqrtarea, center_mass, translate
 from utils.shape_transfer import shape_transfer
+
 
 class Processing():
     """
@@ -15,7 +21,11 @@ class Processing():
 
     def __init__(self, remeshing_size):
         self.min_n_samples = remeshing_size
-        self.vertexlist, self.faceslist  = self.load_mesh()
+        self.vertexlist, self.faceslist, self.nameslist  = self.load_mesh()
+        self.template_v, self.template_f, _ = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
+        self.alphalist = []
+        self.shiftlist = []
+        self.path_to_norm = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data"
 
     def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
         """Load the meshes from a folder.
@@ -32,6 +42,7 @@ class Processing():
         """    
         vetrex_list = []
         faces_list = []
+        names_list = []
         try:
             for file_name in os.listdir(path):
                 if file_name.lower().endswith('.off'):
@@ -39,10 +50,12 @@ class Processing():
                     mesh = trimesh.load(full_path, process=True)
                     vetrex_list.append(mesh.vertices)
                     faces_list.append(mesh.faces)
+                    names_list.append(file_name)
+
         except Exception as e:
             print(f"An error occurred: {e}")
         
-        return vetrex_list,faces_list
+        return vetrex_list,faces_list, names_list
     
     def remeshing(self,):
         """Hierarchical mesh from PyRMT.
@@ -81,21 +94,52 @@ class Processing():
 
         return vetrex_list, faces_list
     
-    def shape_align(self, vertices, faces, index):
-        """Align the mesh to a target.
+    def shape_align(self, source_path= "", target_path ="/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off" ):
+        """Align the mesh to a Template.
 
         Parameters
         ----------
-        vertices : numpy.array
-            Array containing the vertices of a mesh.
-        faces : numpy.array 
-            Array containing the faces of a mesh.
-        index : int
-            key int to name the shape.
+        source_path : str
+            Path to the mesh to align.
+        target_path : str 
+            Path to the mesh Template.
         """   
-        target_shape = "PATH_TO_TARGET"
-        shape_transfer(target_shape, vertices, faces, index)
+        matches = re.findall(r'\d+', source_path)
+        index = matches[-1] if matches else 0000
+        shape_transfer(source_path, target_path, index)
+        return
     
+    def normalize_mesh(self):
+        """
+        Normalize the area and shift the mesh.
+        """
+        for i,(vertices,faces) in enumerate(zip(self.vertexlist, self.faceslist)):
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+
+            alpha = sqrtarea(mesh)
+            mesh.vertices = vertices / alpha
+
+            shift = center_mass(mesh)
+            mesh = translate(mesh, -shift)
+
+            self.alphalist.append(alpha)
+            self.shiftlist.append(shift)
+
+            igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Norm{self.nameslist[i]}"), mesh.vertices, faces)
+
+        return
+    
+    def reverse_normalize_mesh(self):
+        """
+        Reverse the normalization of the mesh.
+        """
+        for i,vertices,faces in enumerate(self.vertexlist, self.faceslist):
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+            mesh.vertices = vertices * self.alphalist[i]
+            self.vertexlist[i] = mesh.vertices
+            igl.write_triangle_mesh(f"/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/processed_PAT_{i+4}.off", self.vertexlist[i], faces)
+        return
+
     def process(self):
         """
         Pipeline to register the meshes to the target one.
@@ -103,3 +147,11 @@ class Processing():
         vl,fl = self.remeshing()
         for i,v,f in enumerate(vl,fl):
             self.shape_align(v, f, i)
+        return
+    
+if __name__ == "__main__":
+    process = Processing(20000)
+    #process.process()
+    process.normalize_mesh()
+    #print(process.alphalist)
+    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/NormPAT_2.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")

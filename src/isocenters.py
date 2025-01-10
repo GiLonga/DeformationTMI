@@ -41,12 +41,17 @@ class IsoGeometry(Patient):
         """
         body_list = []
         x_shoulder = (self.mesh.vertices[self.N_keypoints[15]][0]+self.mesh.vertices[self.N_keypoints[16]][0])/2
-        z_shoulder = (self.mesh.vertices[self.N_keypoints[15]][2]+self.mesh.vertices[self.N_keypoints[16]][2])/2
-        body_list.append((x_shoulder,self.y,z_shoulder))
-
+        z_shoulder = (self.mesh.vertices[self.N_keypoints[17]][2])
+        
+        #TO CALCULATE THE x I  avereged the arms coordinates, TO BE REMOVED
         x_pelvis = (self.mesh.vertices[self.N_keypoints[18]][0]+(self.mesh.vertices[self.N_keypoints[20]][0]+self.mesh.vertices[self.N_keypoints[21]][0])/2)/2
-        z_pelvis = (self.mesh.vertices[self.N_keypoints[17]][2]+self.mesh.vertices[self.N_keypoints[18]][2])/2
+        z_pelvis = (+self.mesh.vertices[self.N_keypoints[18]][2])
+
+
+        body_list.append((x_shoulder,self.y,z_shoulder))
         body_list.append((x_pelvis,self.y,z_pelvis))
+
+
         return body_list
     
     def get_arms_isocenters(self,):
@@ -80,15 +85,15 @@ class IsoGeometry(Patient):
         self.isocenters = iso_list
         return self.isocenters
     
-    def iso_rmse(self, arms): #Can be switched between getter and setter
+    def iso_rmse(self, predicted ,arms): #Can be switched between getter and setter
         """
         Calculate the rmse between the original isocenters and the predicted
         """
         if self.arms == arms:
-            rmse = mean_squared_error(self.isocenters, self.or_isocenters, squared=False)
+            rmse = mean_squared_error(predicted, self.or_isocenters, squared=False)
             self.iso_RMSE = rmse
         else:
-            rmse = mean_squared_error(self.get_head_isocenter(), self.or_isocenters[0], squared=False)
+            rmse = mean_squared_error(predicted, self.or_isocenters[0], squared=False)
             self.iso_RMSE = rmse
 
         return  rmse
