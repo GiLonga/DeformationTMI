@@ -21,8 +21,8 @@ class Processing():
 
     def __init__(self, remeshing_size):
         self.min_n_samples = remeshing_size
-        self.vertexlist, self.faceslist  = self.load_mesh()
-        self.template_v, self.template_f = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
+        self.vertexlist, self.faceslist, self.nameslist  = self.load_mesh()
+        self.template_v, self.template_f, _ = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
         self.alphalist = []
         self.shiftlist = []
         self.path_to_norm = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data"
@@ -42,6 +42,7 @@ class Processing():
         """    
         vetrex_list = []
         faces_list = []
+        names_list = []
         try:
             for file_name in os.listdir(path):
                 if file_name.lower().endswith('.off'):
@@ -49,10 +50,12 @@ class Processing():
                     mesh = trimesh.load(full_path, process=True)
                     vetrex_list.append(mesh.vertices)
                     faces_list.append(mesh.faces)
+                    names_list.append(file_name)
+
         except Exception as e:
             print(f"An error occurred: {e}")
         
-        return vetrex_list,faces_list
+        return vetrex_list,faces_list, names_list
     
     def remeshing(self,):
         """Hierarchical mesh from PyRMT.
@@ -112,7 +115,7 @@ class Processing():
         """
         for i,(vertices,faces) in enumerate(zip(self.vertexlist, self.faceslist)):
             mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
-            
+
             alpha = sqrtarea(mesh)
             mesh.vertices = vertices / alpha
 
@@ -122,7 +125,7 @@ class Processing():
             self.alphalist.append(alpha)
             self.shiftlist.append(shift)
 
-            igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Pat_Norm{i+4}.off"), mesh.vertices, faces)
+            igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Norm{self.nameslist[i]}"), mesh.vertices, faces)
 
         return
     
@@ -150,5 +153,5 @@ if __name__ == "__main__":
     process = Processing(20000)
     #process.process()
     process.normalize_mesh()
-    print(process.alphalist)
-    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/Pat_Norm4.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")
+    #print(process.alphalist)
+    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/NormPAT_2.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")
