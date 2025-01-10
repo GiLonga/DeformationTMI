@@ -73,14 +73,14 @@ def plot_field(mesh, new_kp, original_kp=[],  ):
 
     fig.show()
 
-def plot_isocenters(vertices, new_iso, name='', original_izo=[],):
+def plot_isocenters(vertices, new_iso, name='', groundtruth_iso=[],):
     """
     TO DO
     """
     x, y, z = zip(*vertices)
     x_s, y_s, z_s = zip(*new_iso)
 
-    scatter_original = go.Scatter3d(
+    scatter_isocenters = go.Scatter3d(
         x=x,
         y=y,
         z=z,
@@ -106,9 +106,26 @@ def plot_isocenters(vertices, new_iso, name='', original_izo=[],):
         ),
         name="Iso Coord"
     )
-    layout = go.Layout(scene=dict(aspectmode="data"))
-    fig = go.Figure(data=[scatter_original, scatter_manual,], layout=layout)
 
+    if groundtruth_iso:
+        x_o, y_o, z_o = zip(*groundtruth_iso)
+        scatter_gt = go.Scatter3d(
+        x=x_o,
+        y=y_o,
+        z=z_o,
+        mode='markers',
+        marker=dict(
+            size=3,  # Larger size for manual points
+            color='blue',  # Use a fixed color (e.g., red)
+            opacity=1.0
+        ),
+        name="GT Iso Coord"
+        )   
+        layout = go.Layout(scene=dict(aspectmode="data"))
+        fig = go.Figure(data=[scatter_isocenters, scatter_manual, scatter_gt], layout=layout)
+    else:
+        layout = go.Layout(scene=dict(aspectmode="data"))
+        fig = go.Figure(data=[scatter_isocenters, scatter_manual], layout=layout)
     hover_text = [f'Index: {index}' for index in range(len(vertices))]
     fig.data[0]['text'] = hover_text
 
