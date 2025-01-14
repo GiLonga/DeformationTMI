@@ -61,7 +61,7 @@ def plot_field(mesh, new_kp, original_kp=[],  ):
             color='blue',
             width=5
         ),
-        name="Rectangle Border"
+        name="Rectangle Field"
     )
 
     # Create layout
@@ -166,7 +166,7 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
             (iso[0] +fields[i][0] , iso[1], iso[2]+fields[i+1][0])   # Close the rectangle
             ])
 
-            # Create a line plot for the rectangle borders
+            # Create a line plot for the rectangle Fields
             rectangle_lines = go.Scatter3d(
                 x=rectangle_vertices[:, 0],
                 y=rectangle_vertices[:, 1],
@@ -176,7 +176,7 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                     color=color,
                     width=3
                 ),
-                name="Right Arm Border",
+                name="Right Arm Field",
                 showlegend=True
             )
             data.append(rectangle_lines)
@@ -224,7 +224,7 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                 else:
                     color = 'blue'
 
-                # Create a line plot for the rectangle borders
+                # Create a line plot for the rectangle Fields
                 rectangle_lines = go.Scatter3d(
                     x=rectangle_vertices[:, 0],
                     y=rectangle_vertices[:, 1],
@@ -234,7 +234,7 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                         color=color,
                         width=3
                     ),
-                    name="Legs Border",
+                    name="Legs Field",
                     showlegend=True
                 )
                 data.append(rectangle_lines)
@@ -256,12 +256,12 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                 else:
                     color = 'blue'
                 if i == 0:
-                    _name = 'Head Border'
+                    _name = 'Head Field'
                 if i == 4:
-                    _name = 'Thorax Border'
+                    _name = 'Thorax Field'
                 if i == 8:
-                    _name = 'Column Border'
-                # Create a line plot for the rectangle borders
+                    _name = 'Column Field'
+                # Create a line plot for the rectangle Fields
                 rectangle_lines = go.Scatter3d(
                     x=rectangle_vertices[:, 0],
                     y=rectangle_vertices[:, 1],
