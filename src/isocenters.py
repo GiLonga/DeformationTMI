@@ -225,10 +225,8 @@ class IsoGeometry(Patient):
                 gt = gt[:,[0,2]]
                 gt = gt.tolist()
                 rmse = mean_squared_error(predicted, gt, squared=False)
-                print ("The 2D rmse is:", rmse)
             else:
                 rmse = mean_squared_error(predicted, self.or_isocenters, squared=False)
-                print ("The 3D rmse is:", rmse)
             self.iso_RMSE = rmse
         else:
             rmse = mean_squared_error(predicted, self.or_isocenters[0], squared=False)
@@ -245,9 +243,13 @@ class IsoGeometry(Patient):
             self.field_RMSE = rmse
         return rmse
     
-    def rmse(self, P_iso, P_fields, arms, Two_Dim = True):
+    def rmse(self, P_iso, P_fields, arms):
         """
         Calculate the rmse between the original patient geometry and the forcasted.
         """
-        print("The total RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim) + self.field_rmse(P_fields, arms))
-        return self.iso_RMSE + self.field_RMSE
+        rmse = []
+        print("The total 2D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = True), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
+        rmse.append(self.iso_RMSE + self.field_RMSE)
+        print("The total 3D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = False), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
+        rmse.append(self.iso_RMSE + self.field_RMSE)
+        return rmse
