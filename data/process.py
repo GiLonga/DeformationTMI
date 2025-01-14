@@ -22,12 +22,12 @@ class Processing():
     def __init__(self, remeshing_size):
         self.min_n_samples = remeshing_size
         self.vertexlist, self.faceslist, self.nameslist  = self.load_mesh()
-        self.template_v, self.template_f, _ = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
+        self.template_v, self.template_f, _ = self.load_mesh(os.path.join(os.path.dirname(__file__), "template/high"),)
         self.alphalist = []
         self.shiftlist = []
-        self.path_to_norm = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data"
+        self.path_to_norm = os.path.join(os.path.dirname(__file__), "processed_data")
 
-    def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
+    def load_mesh(self, path= os.path.join(os.path.dirname(__file__), "raw_data") ) -> list:
         """Load the meshes from a folder.
 
         Parameters
@@ -43,8 +43,10 @@ class Processing():
         vetrex_list = []
         faces_list = []
         names_list = []
+        file_names = os.listdir(path)
+        sorted_file_names = sorted(file_names)
         try:
-            for file_name in os.listdir(path):
+            for file_name in sorted_file_names:
                 if file_name.lower().endswith('.off'):
                     full_path = os.path.join(path, file_name)
                     mesh = trimesh.load(full_path, process=True)
@@ -94,7 +96,7 @@ class Processing():
 
         return vetrex_list, faces_list
     
-    def shape_align(self, source_path= "", target_path ="/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off" ):
+    def shape_align(self, source_path= "", target_path =os.path.join(os.path.dirname(__file__), "template/high/PAT_TEMP_0.off")):
         """Align the mesh to a Template.
 
         Parameters
