@@ -136,7 +136,7 @@ def plot_isocenters(vertices, new_iso, name='', groundtruth_iso=[],):
 
     return True
 
-def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = [],):
+def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundtruth_iso = [],):
     """
     TO DO: THIS IS WORKING ONLY FOR PATIENTS WITH ISOCENTERS ONT HTE ARMS AT THE MOMENT
     """
@@ -145,51 +145,17 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
 
     data=[]
 
-    scatter_isocenters = go.Scatter3d(
-        x=x,
-        y=y,
-        z=z,
-        mode='markers',
-        marker=dict(
-            size=1,  # Smaller size for the original points
-            color=z,  # Use z-coordinate for color gradient
-            colorscale='Portland',  # Choose a colorscale
-            opacity=0.8
-        ),
-        name="Mesh Points"
-    )
+    scatter_isocenters = scatter_data(x, y, z)
     data.append(scatter_isocenters)
-    scatter_manual = go.Scatter3d(
-        x=x_s,
-        y=y_s,
-        z=z_s,
-        mode='markers',
-        marker=dict(
-            size=3,  # Larger size for manual points
-            color='black',  # Use a fixed color (e.g., red)
-            opacity=1.0
-        ),
-        name="Iso Coord"
-    )
+    scatter_manual = scatter_plot(x_s, y_s, z_s, color = "black", size = 3, opacity = 1.0)
     data.append(scatter_manual)
     if groundtruth_iso:
-        x_o, y_o, z_o = zip(*groundtruth_iso)
-        scatter_gt = go.Scatter3d(
-        x=x_o,
-        y=y_o,
-        z=z_o,
-        mode='markers',
-        marker=dict(
-            size=3,  # Larger size for manual points
-            color='blue',  # Use a fixed color (e.g., red)
-            opacity=1.0
-        ),
-        name="GT Iso Coord"
-        )   
         
+        x_o, y_o, z_o = zip(*groundtruth_iso)
+        scatter_gt = scatter_plot(x_o, y_o, z_o, color = "blue", size = 3, opacity = 1.0)
         data.append(scatter_gt)
 
-    for i, iso in zip(range(0, 21, 4), new_iso):
+    for i, iso in zip(range(0, len(fields)+1, 4), new_iso):
         if i == 12 :   #WE ARE MANAGING THE ARMS HERE
             color = "purple"
             rectangle_vertices = np.array([
@@ -210,7 +176,8 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
                     color=color,
                     width=3
                 ),
-                name="Rectangle Border"
+                name="Right Arm Border",
+                showlegend=True
             )
             data.append(rectangle_lines)
 
@@ -236,7 +203,8 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
                     color=color,
                     width=3
                 ),
-                name="Rectangle Border"
+                name="Left Arm Border",
+                showlegend=True
             )
             data.append(rectangle_lines)
         if i == 20 :   #WE ARE MANAGING THE ARMS HERE
@@ -266,10 +234,12 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
                         color=color,
                         width=3
                     ),
-                    name="Rectangle Border"
+                    name="Legs Border",
+                    showlegend=True
                 )
                 data.append(rectangle_lines)
-        if i < 12:
+        #if i < 12:
+        if i < 12:  #stubb
             for f in range(2):
                 idx = i+f*2
                 # Define rectangle corners in 3D space
@@ -285,7 +255,12 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
                     color = 'red'
                 else:
                     color = 'blue'
-
+                if i == 0:
+                    _name = 'Head Border'
+                if i == 4:
+                    _name = 'Thorax Border'
+                if i == 8:
+                    _name = 'Column Border'
                 # Create a line plot for the rectangle borders
                 rectangle_lines = go.Scatter3d(
                     x=rectangle_vertices[:, 0],
@@ -296,11 +271,12 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
                         color=color,
                         width=3
                     ),
-                    name="Rectangle Border"
+                    name= _name,
+                    showlegend=True
                 )
                 data.append(rectangle_lines)
 
-    layout = go.Layout(scene=dict(aspectmode="data"))
+    layout = go.Layout(scene=dict(aspectmode="data"), title = f"TMI geometry. 2D RMSE: {rmse[0]}, 3D RMSE: {rmse[1]}" )
     fig = go.Figure(data=data, layout=layout)
     hover_text = [f'Index: {index}' for index in range(len(vertices))]
     fig.data[0]['text'] = hover_text
@@ -310,3 +286,37 @@ def plot_geometry(vertices, new_iso, fields = [],  name = '', groundtruth_iso = 
     #fig.show()
 
     return True
+
+def scatter_plot(x_s, y_s, z_s, color, size, opacity):
+    scatter_manual = go.Scatter3d(
+        x=x_s,
+        y=y_s,
+        z=z_s,
+        mode='markers',
+        marker=dict(
+            size=size,  # Larger size for manual points
+            color=color,  # Use a fixed color (e.g., red)
+            opacity=opacity
+        ),
+        name="Iso Coord"
+    )
+    
+    return scatter_manual
+
+def scatter_data(x, y, z):
+    scatter_isocenters = go.Scatter3d(
+        x=x,
+        y=y,
+        z=z,
+        mode='markers',
+        marker=dict(
+            size=1,  # Smaller size for the original points
+            color=z,  # Use z-coordinate for color gradient
+            colorscale='Portland',  # Choose a colorscale
+            opacity=0.8
+        ),
+        name="Mesh Points"
+        
+    )
+    
+    return scatter_isocenters
