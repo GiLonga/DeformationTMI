@@ -19,8 +19,9 @@ class Patient():
     template: Bool,
         To set as true if the instance is the template.
     """
-    def __init__(self, PTV, Plan_path="", template=False):
+    def __init__(self, PTV, PTV_or, Plan_path="", template=False):
         self.mesh = PTV
+        self.mesh_or = PTV_or
         self.template=template
         self.arms = None
         self.p2p=None
@@ -41,15 +42,17 @@ class Patient():
         """
         if self.template:
             keypoints = [ 9522, 11032, 10203, 10368,  9766,  9789, 10396, 10560, 10132, 9822, 5751, 15264, 10678, 10621, # maximum points head
-              10397, #head low field
-              1039, 19844, #shoulder's length
-              10149, #second iso
-              8529, #third iso
-              8828, #fourth iso
-              623, 19509, #iso on the arms
-              3196, 16180, #heigth arm field
-              5, #length arm field
-              2972,  4055, 16249,  4330, 16175, 17162,  4532,  3627,  3625, 2971, #feet as minimum point of PTV
+              10397, #head low field (index: 14)
+              1039, 19844, #shoulder's length (index: 15-16)
+              10154, #second iso (index: 17)
+              8982, #third iso (index: 18)
+              8828, #fourth iso (index: 19) 8828
+              623, 19564, #iso on the arms (index: 20-21)
+              3196, 16180, #heigth arm field (index: 22-23)
+              5, #length arm field (index: 24)
+              2004, 18857, # z head low field (index: 25-26)
+              2, 1490, # x right arm field (index: 27-28)
+              20263, 18700, # x left arm field (index: 29-30)
               ]
         else:
             keypoints=None
