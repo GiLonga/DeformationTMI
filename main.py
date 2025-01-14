@@ -5,16 +5,11 @@ from src.isocenters import IsoGeometry
 from data.process import Processing
 import numpy as np
 import os
-import sys
 
-
-Plane_path_S = os.path.join(os.path.dirname(__file__),"data/raw_data/RTPLAN002.dcm") #ToDo, save the paths in an external file 
-index = 2
+pat_index = 4
+Plane_path_S = os.path.join(os.path.dirname(__file__),f"data/raw_data/RTPLAN00{pat_index}.dcm") #ToDo, save the paths in an external file 
 
 if __name__ == "__main__":
-
-    print()
-
 
     process = Processing(20000)
     #process.process()
@@ -22,8 +17,8 @@ if __name__ == "__main__":
     #process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/Pat_Norm4.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")
 
     template = load_mesh(os.path.join(os.path.dirname(__file__),"data/template/rem_PTV_Tot_new.off"))
-    ptv0 = load_mesh(os.path.join(os.path.dirname(__file__),f"data/processed_data/processed_patient_{index}.off"))
-    ptv0_or = load_mesh(os.path.join(os.path.dirname(__file__),f"data/raw_data/PAT_{index}.off"))
+    ptv0 = load_mesh(os.path.join(os.path.dirname(__file__),f"data/processed_data/processed_patient_{pat_index}.off"))
+    ptv0_or = load_mesh(os.path.join(os.path.dirname(__file__),f"data/raw_data/PAT_{pat_index}.off"))
     
     temp_pat= Patient(template, template, Plan_path = os.path.join(os.path.dirname(__file__), "data/raw_data/RTPLAN001.dcm"), template=True)
     pat = Patient(ptv0, ptv0_or, Plane_path_S,)
@@ -40,11 +35,11 @@ if __name__ == "__main__":
     pat0.find_fields()
     #plot_geometry(HR_temp.vertices, temp_pat.or_isocenters, temp_pat.or_fields, name = "Template")
     rmse = pat0.rmse(pat0.isocenters, pat0.fields, arms = temp_pat.arms)
-    plot_geometry(process.vertexlist[index], pat0.isocenters, pat0.fields, rmse= rmse, name = f"PAT{index}")
-    plot_geometry(process.vertexlist[index], pat0.or_isocenters, pat0.or_fields, rmse = [0.0,0.0], name = f"PAT{index}_GT")
+    plot_geometry(process.vertexlist[pat_index-2], pat0.isocenters, pat0.fields, rmse= rmse, name = f"PAT{pat_index}")
+    plot_geometry(process.vertexlist[pat_index-2], pat0.or_isocenters, pat0.or_fields, rmse = [0.0,0.0], name = f"PAT{pat_index}_GT")
    
     #plot_isocenters(HR_temp.vertices, temp_pat.or_isocenters, name = "Template")
-    #plot_isocenters(process.vertexlist[index], reversed_isos, name = "GT", groundtruth_iso = pat0.or_isocenters)
+    #plot_isocenters(process.vertexlist[pat_index], reversed_isos, name = "GT", groundtruth_iso = pat0.or_isocenters)
 
 
     #plot_isocenters(pat.mesh, [pat.mesh.vertices[pat.N_keypoints[21]]], ) #TO CHECK PREDICTED KEYPOINTS
