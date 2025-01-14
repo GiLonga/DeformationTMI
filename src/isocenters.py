@@ -247,9 +247,17 @@ class IsoGeometry(Patient):
         """
         Calculate the rmse between the original patient geometry and the forcasted.
         """
+        if self.isocenters == None or self.fields == None:
+            ValueError("Before calculate the RMSE, calculate the isocenters and the fields")
+        
+        if len(self.isocenters) !=  len(self.or_isocenters):
+            ValueError("Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+            return [777,777]
+
         rmse = []
         print("The total 2D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = True), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
         rmse.append(self.iso_RMSE + self.field_RMSE)
+
         print("The total 3D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = False), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
         rmse.append(self.iso_RMSE + self.field_RMSE)
         return rmse
