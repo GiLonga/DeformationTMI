@@ -2,6 +2,9 @@ import numpy as np
 from src.TMIgeometry import Patient
 from sklearn.metrics import mean_squared_error
 import warnings
+warnings.simplefilter('always', UserWarning)
+warnings.formatwarning = lambda message, category, filename, lineno, line=None: f'{message}\n'
+
 
 class IsoGeometry(Patient):
     def __init__(self, patient_instance:Patient, ):
@@ -252,7 +255,7 @@ class IsoGeometry(Patient):
             ValueError("Before calculate the RMSE, calculate the isocenters and the fields")
         
         if len(self.isocenters) !=  len(self.or_isocenters):
-            warnings.warn("Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+            warnings.warn("\033[33mWARNING:\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
             return [38808,38808]
 
         rmse = []
@@ -271,7 +274,8 @@ class IsoGeometry(Patient):
             raise ValueError("Before calculate the RMSE, calculate the isocenters and the fields")
         
         if len(self.isocenters) !=  len(self.or_isocenters):
-            warnings.warn("Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+
+            warnings.warn("\033[33mWARNING:\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
             return [38808,38808]
 
         predicted = np.array(P_iso)
