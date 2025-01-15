@@ -22,12 +22,12 @@ class Processing():
     def __init__(self, remeshing_size):
         self.min_n_samples = remeshing_size
         self.vertexlist, self.faceslist, self.nameslist  = self.load_mesh()
-        self.template_v, self.template_f, _ = self.load_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high")
+        self.template_v, self.template_f, _ = self.load_mesh(os.path.join(os.path.dirname(__file__), "template/high"),)
         self.alphalist = []
         self.shiftlist = []
-        self.path_to_norm = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data"
+        self.path_to_norm = os.path.join(os.path.dirname(__file__), "processed_data")
 
-    def load_mesh(self, path="DeformationTMI/data/raw_data") -> list:
+    def load_mesh(self, path= os.path.join(os.path.dirname(__file__), "raw_data") ) -> list:
         """Load the meshes from a folder.
 
         Parameters
@@ -43,8 +43,10 @@ class Processing():
         vetrex_list = []
         faces_list = []
         names_list = []
+        file_names = os.listdir(path)
+        sorted_file_names = sorted(file_names)
         try:
-            for file_name in os.listdir(path):
+            for file_name in sorted_file_names:
                 if file_name.lower().endswith('.off'):
                     full_path = os.path.join(path, file_name)
                     mesh = trimesh.load(full_path, process=True)
@@ -94,7 +96,7 @@ class Processing():
 
         return vetrex_list, faces_list
     
-    def shape_align(self, source_path= "", target_path ="/home/ubuntu/giorgio_longari/DeformationTMI/data/template/high/PAT_TEMP_0.off" ):
+    def shape_align(self, source_path= "", target_path =os.path.join(os.path.dirname(__file__), "template/high/PAT_TEMP_0.off")):
         """Align the mesh to a Template.
 
         Parameters
@@ -106,13 +108,14 @@ class Processing():
         """   
         matches = re.findall(r'\d+', source_path)
         index = matches[-1] if matches else 0000
-        shape_transfer(source_path, target_path, index)
-        return
+        path_aligned_mesh =shape_transfer(source_path, target_path, index)
+        return 
     
     def normalize_mesh(self):
         """
         Normalize the area and shift the mesh.
         """
+        path_list = []
         for i,(vertices,faces) in enumerate(zip(self.vertexlist, self.faceslist)):
             mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
 
@@ -124,10 +127,10 @@ class Processing():
 
             self.alphalist.append(alpha)
             self.shiftlist.append(shift)
+            path_list.append(os.path.join(self.path_to_norm, f"Norm{self.nameslist[i]}"))
+            igl.write_triangle_mesh(path_list[i], mesh.vertices, faces)
 
-            igl.write_triangle_mesh(os.path.join(self.path_to_norm, f"Norm{self.nameslist[i]}"), mesh.vertices, faces)
-
-        return
+        return path_list
     
     def reverse_normalize_mesh(self):
         """
@@ -152,6 +155,6 @@ class Processing():
 if __name__ == "__main__":
     process = Processing(20000)
     #process.process()
-    process.normalize_mesh()
+    norm_path = process.normalize_mesh()
     #print(process.alphalist)
-    process.shape_align(source_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/NormPAT_2.off", target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")
+    process.shape_align(source_path= norm_path[0], target_path= "/home/ubuntu/giorgio_longari/DeformationTMI/data/template/rem_PTV_Tot_new.off")

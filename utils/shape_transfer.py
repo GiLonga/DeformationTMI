@@ -158,4 +158,9 @@ def shape_transfer(source_path, target_path, index=0000):
     #o3d.visualization.draw_geometries([src_mesh])
 
     """dump results"""
-    o3d.io.write_triangle_mesh("/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/" + f"processed_patient_{index}" + ".off", src_mesh)
+    path = "/home/ubuntu/giorgio_longari/DeformationTMI/data/processed_data/" + f"processed_patient_{index}" + ".off"
+    o3d.io.write_triangle_mesh(path, src_mesh)
+    
+    print(f"Shape transfer completed for patient {index}")
+
+    return path
