@@ -1,6 +1,7 @@
 import numpy as np
 from src.TMIgeometry import Patient
 from sklearn.metrics import mean_squared_error
+import warnings
 
 class IsoGeometry(Patient):
     def __init__(self, patient_instance:Patient, ):
@@ -190,14 +191,14 @@ class IsoGeometry(Patient):
 
         return legs_fields
     
-    def find_fields(self,):
+    def find_fields(self, arms):
         """
         Calculate the fields around the isocenters.
         """
         fields_list = []
         fields_list = fields_list + self.get_head_fields()
         fields_list = fields_list + self.get_body_fields()
-        if self.arms:
+        if arms == True:
             fields_list = fields_list + self.get_arms_fields()
         fields_list = fields_list + self.get_legs_fields()
         self.fields = fields_list
@@ -251,8 +252,8 @@ class IsoGeometry(Patient):
             ValueError("Before calculate the RMSE, calculate the isocenters and the fields")
         
         if len(self.isocenters) !=  len(self.or_isocenters):
-            ValueError("Can't calculate the RMSE, the template and the patinet have a different geometry plan")
-            return [777,777]
+            warnings.warn("Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+            return [38808,38808]
 
         rmse = []
         print("The total 2D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = True), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
@@ -261,3 +262,27 @@ class IsoGeometry(Patient):
         print("The total 3D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = False), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
         rmse.append(self.iso_RMSE + self.field_RMSE)
         return rmse
+
+    def rmse_REAL(self, P_iso, P_fields, arms):
+        """
+        Calculate the rmse between the original patient geometry and the forcasted.
+        """
+        if self.isocenters == None or self.fields == None:
+            raise ValueError("Before calculate the RMSE, calculate the isocenters and the fields")
+        
+        if len(self.isocenters) !=  len(self.or_isocenters):
+            warnings.warn("Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+            return [38808,38808]
+
+        predicted = np.array(P_iso)
+        predicted = predicted[:,[0,2]]
+        predicted = predicted.tolist()
+        gt = np.array(self.or_isocenters)
+        gt = gt[:,[0,2]]
+        gt = gt.tolist()
+
+        RMSE_TOT_2D = mean_squared_error(predicted + P_fields , gt + self.or_fields, squared=False)
+
+        print("The total 2D RMSE is: ", RMSE_TOT_2D)
+        
+        return RMSE_TOT_2D
