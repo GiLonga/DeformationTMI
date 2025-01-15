@@ -109,7 +109,7 @@ class Processing():
         matches = re.findall(r'\d+', source_path)
         index = matches[-1] if matches else 0000
         path_aligned_mesh =shape_transfer(source_path, target_path, index)
-        return x
+        return 
     
     def normalize_mesh(self):
         """
