@@ -92,6 +92,16 @@ class IsoGeometry(Patient):
         self.isocenters = iso_list
         return self.isocenters
     
+    def set_x_aperture(self, arms):
+        """
+        Set the x coordinate of the aperture
+        """
+        if arms == self.arms:
+            field = (-200, 200)
+        else:
+            field = (-200, 200) #STUBBED
+        return field
+
     def get_head_fields(self,):
         """
         Find the head fields from the keypoints
@@ -255,7 +265,7 @@ class IsoGeometry(Patient):
             ValueError("Before calculate the RMSE, calculate the isocenters and the fields")
         
         if len(self.isocenters) !=  len(self.or_isocenters):
-            warnings.warn("\033[33mWARNING:\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+            warnings.warn("\033[33m[DeformationTMI WARNING]\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
             return [38808,38808]
 
         rmse = []
@@ -275,7 +285,7 @@ class IsoGeometry(Patient):
         
         if len(self.isocenters) !=  len(self.or_isocenters):
 
-            warnings.warn("\033[33mWARNING:\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
+            warnings.warn("\033[33m[DeformationTMI WARNING]\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
             return [38808,38808]
 
         predicted = np.array(P_iso)
