@@ -53,6 +53,7 @@ class Patient():
               2004, 18857, # z head low field (index: 25-26)
               2, 1490, # x right arm field (index: 27-28)
               20263, 18700, # x left arm field (index: 29-30)
+              10607, 10272, # second and third isos for standard patients (index: 31-32)
               ]
         else:
             keypoints=None
