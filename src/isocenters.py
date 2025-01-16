@@ -39,20 +39,31 @@ class IsoGeometry(Patient):
 
         return (x,self.y,z)
 
-    def get_body_isocenters(self,):
+    def get_body_isocenters(self, arms):
         """
         Find the body's isocenters from the keypoints
         """
         body_list = []
-        x_shoulder = (self.mesh_or.vertices[self.N_keypoints[15]][0]+self.mesh_or.vertices[self.N_keypoints[16]][0])/2
-        z_shoulder = (self.mesh_or.vertices[self.N_keypoints[17]][2])
-        
+
+        if arms:
+            x_shoulder = (self.mesh_or.vertices[self.N_keypoints[15]][0]+self.mesh_or.vertices[self.N_keypoints[16]][0])/2
+            z_shoulder = (self.mesh_or.vertices[self.N_keypoints[17]][2])
+            body_list.append((x_shoulder,self.y,z_shoulder))
+        else:
+            x_thorax = (self.mesh_or.vertices[self.N_keypoints[31]][0])
+            z_thorax = (self.mesh_or.vertices[self.N_keypoints[31]][2])
+            body_list.append((x_thorax,self.y,z_thorax))
+
+            x_abd = (self.mesh_or.vertices[self.N_keypoints[32]][0])
+            z_abd = (self.mesh_or.vertices[self.N_keypoints[32]][2])     
+            body_list.append((x_abd,self.y,z_abd))       
+            
         #TO CALCULATE THE x I  avereged the arms coordinates, TO BE REMOVED
         x_pelvis = (self.mesh_or.vertices[self.N_keypoints[18]][0]+(self.mesh_or.vertices[self.N_keypoints[20]][0]+self.mesh_or.vertices[self.N_keypoints[21]][0])/2)/2
         z_pelvis = (+self.mesh_or.vertices[self.N_keypoints[18]][2])
 
 
-        body_list.append((x_shoulder,self.y,z_shoulder))
+        
         body_list.append((x_pelvis,self.y,z_pelvis))
 
 
@@ -85,7 +96,7 @@ class IsoGeometry(Patient):
         """
         iso_list=[]
         iso_list.append(self.get_head_isocenter())
-        iso_list = iso_list + self.get_body_isocenters()
+        iso_list = iso_list + self.get_body_isocenters(arms)
         if arms:
             iso_list = iso_list + self.get_arms_isocenters()
         iso_list = iso_list + self.get_legs_isocenters()
@@ -136,14 +147,14 @@ class IsoGeometry(Patient):
         
         return head_fields
     
-    def get_body_fields(self,):
+    def get_body_fields(self, arms):
         """
         Find the body fields from the keypoints
         """
         body_fields = []
         head_iso = self.get_head_isocenter()
         head_fields = self.get_head_fields()
-        body_iso = self.get_body_isocenters()
+        body_iso = self.get_body_isocenters(arms)
         arms_iso = self.get_arms_isocenters()
 
         z_shoulder_up_aperture_1, z_shoulder_low_aperture_1 = self.hug_the_isocenter(body_iso[0])
@@ -184,14 +195,14 @@ class IsoGeometry(Patient):
         
         return arms_fields
     
-    def get_legs_fields(self,): 
+    def get_legs_fields(self, arms): 
         """
         Find the legs fields from the keypoints
         """
         legs_fields = []
         legs_iso = self.get_legs_isocenters()
-        body_fields = self.get_body_fields()
-        body_iso = self.get_body_isocenters()
+        body_fields = self.get_body_fields(arms)
+        body_iso = self.get_body_isocenters(arms)
 
         z_legs_up_aperture_1, z_legs_low_aperture_1 = self.hug_the_isocenter(legs_iso[0])
         z_legs_up_aperture_2 = body_iso[-1][2] + body_fields[-2][0] - legs_iso[0][2] + 50
@@ -210,10 +221,10 @@ class IsoGeometry(Patient):
         """
         fields_list = []
         fields_list = fields_list + self.get_head_fields()
-        fields_list = fields_list + self.get_body_fields()
+        fields_list = fields_list + self.get_body_fields(arms)
         if arms == True:
             fields_list = fields_list + self.get_arms_fields()
-        fields_list = fields_list + self.get_legs_fields()
+        fields_list = fields_list + self.get_legs_fields(arms)
         self.fields = fields_list
         return self.fields
     
