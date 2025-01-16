@@ -77,55 +77,23 @@ def plot_isocenters(vertices, new_iso, name='', groundtruth_iso=[],):
     """
     TO DO
     """
+    data = []
     x, y, z = zip(*vertices)
     x_s, y_s, z_s = zip(*new_iso)
 
-    scatter_isocenters = go.Scatter3d(
-        x=x,
-        y=y,
-        z=z,
-        mode='markers',
-        marker=dict(
-            size=1,  # Smaller size for the original points
-            color=z,  # Use z-coordinate for color gradient
-            colorscale='Portland',  # Choose a colorscale
-            opacity=0.8
-        ),
-        name="Mesh Points"
-    )
+    scatter_pointcloud = scatter_data(x, y, z)
+    scatter_isos = scatter_plot(x_s, y_s, z_s, color = "black", size = 3, opacity = 1.0)
 
-    scatter_manual = go.Scatter3d(
-        x=x_s,
-        y=y_s,
-        z=z_s,
-        mode='markers',
-        marker=dict(
-            size=3,  # Larger size for manual points
-            color='black',  # Use a fixed color (e.g., red)
-            opacity=1.0
-        ),
-        name="Iso Coord"
-    )
+    data.append(scatter_pointcloud)
+    data.append(scatter_isos)
 
     if groundtruth_iso:
         x_o, y_o, z_o = zip(*groundtruth_iso)
-        scatter_gt = go.Scatter3d(
-        x=x_o,
-        y=y_o,
-        z=z_o,
-        mode='markers',
-        marker=dict(
-            size=3,  # Larger size for manual points
-            color='blue',  # Use a fixed color (e.g., red)
-            opacity=1.0
-        ),
-        name="GT Iso Coord"
-        )   
-        layout = go.Layout(scene=dict(aspectmode="data"))
-        fig = go.Figure(data=[scatter_isocenters, scatter_manual, scatter_gt], layout=layout)
-    else:
-        layout = go.Layout(scene=dict(aspectmode="data"))
-        fig = go.Figure(data=[scatter_isocenters, scatter_manual], layout=layout)
+        scatter_gt = scatter_plot(x_o, y_o, z_o, color = "blue", size = 3, opacity = 1.0, _name = "GT Iso Coord")  
+        data.append(scatter_gt)
+        
+    layout = go.Layout(scene=dict(aspectmode="data"))
+    fig = go.Figure(data = data, layout=layout)
     hover_text = [f'Index: {index}' for index in range(len(vertices))]
     fig.data[0]['text'] = hover_text
 
@@ -138,7 +106,7 @@ def plot_isocenters(vertices, new_iso, name='', groundtruth_iso=[],):
 
 def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundtruth_iso = [],):
     """
-    TO DO: THIS IS WORKING ONLY FOR PATIENTS WITH ISOCENTERS ONT HTE ARMS AT THE MOMENT
+    TO DO: THIS IS WORKING ONLY FOR PATIENTS WITH ISOCENTERS ON THE ARMS AT THE MOMENT
     """
     x, y, z = zip(*vertices)
     x_s, y_s, z_s = zip(*new_iso)
@@ -152,7 +120,7 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
     if groundtruth_iso:
         
         x_o, y_o, z_o = zip(*groundtruth_iso)
-        scatter_gt = scatter_plot(x_o, y_o, z_o, color = "blue", size = 3, opacity = 1.0)
+        scatter_gt = scatter_plot(x_o, y_o, z_o, color = "blue", size = 3, opacity = 1.0, _name = "GT Iso Coord")
         data.append(scatter_gt)
 
     for i, iso in zip(range(0, len(fields)+1, 4), new_iso):
@@ -288,7 +256,7 @@ def plot_rectangle_field(fields, data, iso, color, idx, _name):
                 )
     data.append(rectangle_lines)
 
-def scatter_plot(x_s, y_s, z_s, color, size, opacity):
+def scatter_plot(x_s, y_s, z_s, color, size, opacity , _name = "Iso Coord"):
     scatter_manual = go.Scatter3d(
         x=x_s,
         y=y_s,
@@ -299,12 +267,12 @@ def scatter_plot(x_s, y_s, z_s, color, size, opacity):
             color=color,  # Use a fixed color (e.g., red)
             opacity=opacity
         ),
-        name="Iso Coord"
+        name = _name
     )
     
     return scatter_manual
 
-def scatter_data(x, y, z):
+def scatter_data(x, y, z, _name = "Mesh Points" ):
     scatter_isocenters = go.Scatter3d(
         x=x,
         y=y,
@@ -316,7 +284,7 @@ def scatter_data(x, y, z):
             colorscale='Portland',  # Choose a colorscale
             opacity=0.8
         ),
-        name="Mesh Points"
+        name = _name
         
     )
     
