@@ -151,7 +151,8 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                 data.append(rectangle_lines)
             else:
                 for f in range(2):
-                    idx = (i-4)+f*2
+                    #idx = (i-4)+f*2
+                    idx = i+f*2
                     _name="Abd Field"
                     if f % 2 == 0:
                         color = 'red'
@@ -189,7 +190,8 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                 data.append(rectangle_lines)
             else:
                 for f in range(2):
-                    idx = (i-4)+f*2
+                    #idx = (i-4)+f*2
+                    idx = i+f*2
                     _name="Pelvis Field"
                     if f % 2 == 0:
                         color = 'red'
@@ -197,7 +199,7 @@ def plot_geometry(vertices, new_iso, fields = [], rmse = [],  name = '', groundt
                         color = 'blue'
                     # Define rectangle corners in 3D space
                     plot_rectangle_field(fields, data, iso, color, idx, _name)
-        if i == 20 :   #WE ARE MANAGING THE ARMS HERE
+        if i == 20 :   #WE ARE MANAGING THE LEGS HERE
             for f in range(2):
                 idx = (i-4)+f*2
                 _name="Legs Field"
