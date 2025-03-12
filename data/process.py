@@ -4,6 +4,7 @@ import numpy as np
 import sys
 import re
 import igl
+import pandas as pd
 #from PyRMT import RMTMesh
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
 from utils.basic import sqrtarea, center_mass, translate
@@ -26,6 +27,7 @@ class Processing():
         self.alphalist = []
         self.shiftlist = []
         self.path_to_norm = os.path.join(os.path.dirname(__file__), "processed_data")
+        self.data_sheet = pd.read_excel(os.path.join(os.getcwd(), "Data_TMLI_hum\data.xlsx"))
 
     def load_mesh(self, path= os.path.join(os.path.dirname(__file__), "raw_data") ) -> list:
         """Load the meshes from a folder.
@@ -152,6 +154,25 @@ class Processing():
             self.shape_align(v, f, i)
         return
     
+    def get_patien_param(self, index, ):
+        """
+        Function to get the patient parameters.
+        """
+        pat = self.data_sheet.iloc[index]
+
+        pat_dict ={
+                    "ID" : pat["PatientID"],
+                    "arms" : pat["IsocenterOnArms"],
+                    "x_dim" : pat["OrigMaskShape_x"],
+                    "y_dim" : pat["OrigMaskShape_y"],
+                    "z_dim" : pat["OrigMaskShape_z"],
+                    "SliceThickness" : pat["SliceThickness"],
+                    "PixelSpacing" : pat["PixelSpacing"],
+                    "PTV_id" : pat["PTVID"]
+                    }
+
+        return pat_dict
+        
 if __name__ == "__main__":
     process = Processing(20000)
     #process.process()
