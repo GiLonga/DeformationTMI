@@ -174,5 +174,7 @@ cython_debug/
 /data/raw_data
 /data/processed_data
 /data/template
+/data/dicom
+/data/data.xlsx
 /wrap
 /output
