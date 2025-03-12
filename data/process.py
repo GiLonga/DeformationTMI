@@ -5,6 +5,11 @@ import sys
 import re
 import igl
 import pandas as pd
+from pathlib import Path
+import pydicom
+from skimage.draw import polygon
+from skimage import measure
+
 #from PyRMT import RMTMesh
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
 from utils.basic import sqrtarea, center_mass, translate
@@ -27,7 +32,7 @@ class Processing():
         self.alphalist = []
         self.shiftlist = []
         self.path_to_norm = os.path.join(os.path.dirname(__file__), "processed_data")
-        self.data_sheet = pd.read_excel(os.path.join(os.getcwd(), "Data_TMLI_hum\data.xlsx"))
+        self.data_sheet = pd.read_excel(os.path.join(os.getcwd(), "data.xlsx"))
 
     def load_mesh(self, path= os.path.join(os.path.dirname(__file__), "raw_data") ) -> list:
         """Load the meshes from a folder.
@@ -172,12 +177,78 @@ class Processing():
                     }
 
         return pat_dict
-    def world_to_voxel(coord, x_min, y_min, z_min, dx, dy, dz):
+    
+    def world_to_voxel(self, coord, x_min, y_min, z_min, dx, dy, dz):
         """Convert real-world (x, y, z) coordinates to voxel indices"""
         i = int((coord[0] - x_min) / dx)
         j = int((coord[1] - y_min) / dy)
         k = int((coord[2] - z_min) / dz)
         return i, j, k
+    
+    def extract_ptv(self, idx: int,):
+
+        PTV_number = None
+        ex_data = self.data_sheet
+        pat_dict = self.get_patien_param(idx, ex_data)
+
+        dx = pat_dict["PixelSpacing"]
+        dy = pat_dict["PixelSpacing"]
+        dz = pat_dict["SliceThickness"]
+        #voxel_size = (dx, dy, dz)
+        local_dicom_path = Path(os.path.join(os.getcwd(), "dicom"))
+        pat_folder = local_dicom_path / pat_dict["ID"]
+
+        if not pat_folder.exists():
+            raise FileNotFoundError(f"Patient folder not found: {pat_folder}")
+
+        dicom_files = sorted(f for f in pat_folder.iterdir() if f.suffix.lower() == ".dcm")
+        if len(dicom_files) != 2:
+            raise FileNotFoundError(f"Expected 2 DICOM files (Plan & RT Struct), found {len(dicom_files)}.")
+        plan_file, rt_struct_file = dicom_files
+
+        plan = pydicom.dcmread(plan_file)
+        rt_struct = pydicom.dcmread(rt_struct_file)
+
+        contour_points = []
+        for SetROI in rt_struct.StructureSetROISequence:
+            if SetROI.ROIName.lower() in { pat_dict["PTV_id"].lower()}:
+                PTV_number = SetROI.ROINumber
+                break 
+        if PTV_number is None:
+            raise FileNotFoundError(f"I can't find a PTV for this Patient: {pat_dict['ID']}.")
+        for roiCS in rt_struct.ROIContourSequence:
+            if roiCS.ReferencedROINumber == PTV_number:
+                roi = roiCS
+                break
+        for contour in roi.ContourSequence:
+            points = np.array(contour.ContourData).reshape(-1, 3)
+            contour_points.append(points)
+        all_points = np.vstack(contour_points)
+        x_min, x_max = min(all_points[:, 0]), max(all_points[:, 0])
+        y_min, y_max = min(all_points[:, 1]), max(all_points[:, 1])
+        z_min, z_max = min(all_points[:, 2]), max(all_points[:, 2])
+
+        voxel_grid = np.zeros((pat_dict["x_dim"], pat_dict["y_dim"], pat_dict["z_dim"]), dtype=np.uint8)
+        for contour in contour_points:
+            z_voxel = self.world_to_voxel((0, 0, contour[0, 2]), x_min, y_min, z_min, dx, dy, dz)[2]
+
+            x_voxels, y_voxels = [], []
+            for point in contour:
+                i, j, _ = self.world_to_voxel(point, x_min, y_min, z_min, dx, dy, dz)
+                x_voxels.append(i)
+                y_voxels.append(j)
+
+            rr, cc = polygon(x_voxels, y_voxels, shape=voxel_grid.shape[:2])
+            voxel_grid[rr, cc, z_voxel] = 1
+            
+        verts, faces = measure.marching_cubes(voxel_grid, level=0.5) # normals and values are not used
+        verts_mm = np.zeros_like(verts)
+        verts_mm[:, 0] = verts[:, 0] * dx + x_min  
+        verts_mm[:, 1] = verts[:, 1] * dy + y_min  
+        verts_mm[:, 2] = verts[:, 2] * dz + z_min 
+
+        mesh_tri = trimesh.Trimesh(vertices=verts_mm, faces=faces)
+        mesh_tri.export(f'raw_data/f{pat_dict["ID"]}.off', file_type='off')
         
 if __name__ == "__main__":
     process = Processing(20000)
