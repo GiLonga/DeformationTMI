@@ -3,7 +3,7 @@ from src.TMIgeometry import Patient
 from sklearn.metrics import mean_squared_error
 import warnings
 warnings.simplefilter('always', UserWarning)
-warnings.formatwarning = lambda message, category, filename, lineno, line=None: f'{message}\n'
+warnings.formatwarning = lambda message, line=None: f'{message}\n'
 
 
 class IsoGeometry(Patient):
@@ -39,20 +39,31 @@ class IsoGeometry(Patient):
 
         return (x,self.y,z)
 
-    def get_body_isocenters(self,):
+    def get_body_isocenters(self, arms):
         """
         Find the body's isocenters from the keypoints
         """
         body_list = []
-        x_shoulder = (self.mesh_or.vertices[self.N_keypoints[15]][0]+self.mesh_or.vertices[self.N_keypoints[16]][0])/2
-        z_shoulder = (self.mesh_or.vertices[self.N_keypoints[17]][2])
-        
+
+        if arms:
+            x_shoulder = (self.mesh_or.vertices[self.N_keypoints[15]][0]+self.mesh_or.vertices[self.N_keypoints[16]][0])/2
+            z_shoulder = (self.mesh_or.vertices[self.N_keypoints[17]][2])
+            body_list.append((x_shoulder,self.y,z_shoulder))
+        else:
+            x_thorax = (self.mesh_or.vertices[self.N_keypoints[31]][0])
+            z_thorax = (self.mesh_or.vertices[self.N_keypoints[31]][2])
+            body_list.append((x_thorax,self.y,z_thorax))
+
+            x_abd = (self.mesh_or.vertices[self.N_keypoints[32]][0])
+            z_abd = (self.mesh_or.vertices[self.N_keypoints[32]][2])     
+            body_list.append((x_abd,self.y,z_abd))       
+            
         #TO CALCULATE THE x I  avereged the arms coordinates, TO BE REMOVED
         x_pelvis = (self.mesh_or.vertices[self.N_keypoints[18]][0]+(self.mesh_or.vertices[self.N_keypoints[20]][0]+self.mesh_or.vertices[self.N_keypoints[21]][0])/2)/2
         z_pelvis = (+self.mesh_or.vertices[self.N_keypoints[18]][2])
 
 
-        body_list.append((x_shoulder,self.y,z_shoulder))
+        
         body_list.append((x_pelvis,self.y,z_pelvis))
 
 
@@ -85,7 +96,7 @@ class IsoGeometry(Patient):
         """
         iso_list=[]
         iso_list.append(self.get_head_isocenter())
-        iso_list = iso_list + self.get_body_isocenters()
+        iso_list = iso_list + self.get_body_isocenters(arms)
         if arms:
             iso_list = iso_list + self.get_arms_isocenters()
         iso_list = iso_list + self.get_legs_isocenters()
@@ -136,29 +147,48 @@ class IsoGeometry(Patient):
         
         return head_fields
     
-    def get_body_fields(self,):
+    def get_body_fields(self, arms):
         """
         Find the body fields from the keypoints
         """
         body_fields = []
         head_iso = self.get_head_isocenter()
         head_fields = self.get_head_fields()
-        body_iso = self.get_body_isocenters()
-        arms_iso = self.get_arms_isocenters()
+        body_iso = self.get_body_isocenters(arms)
+        
+        if arms:
+            arms_iso = self.get_arms_isocenters()
+            z_shoulder_up_aperture_1, z_shoulder_low_aperture_1 = self.hug_the_isocenter(body_iso[0])
+            z_shoulder_up_aperture_2 = head_iso[2] + head_fields[2][0] -body_iso[0][2]  + 30
+            z_shoulder_low_aperture_2 = arms_iso[0][2] - body_iso[0][2] + 40
+            body_fields.append((z_shoulder_up_aperture_1, z_shoulder_up_aperture_2,))
+            body_fields.append((-200, 200))
+            body_fields.append((z_shoulder_low_aperture_2, z_shoulder_low_aperture_1,))
+            body_fields.append((-200, 200))
 
-        z_shoulder_up_aperture_1, z_shoulder_low_aperture_1 = self.hug_the_isocenter(body_iso[0])
-        z_shoulder_up_aperture_2 = head_iso[2] + head_fields[2][0] -body_iso[0][2]  + 30
-        z_shoulder_low_aperture_2 = arms_iso[0][2] - body_iso[0][2] + 40
+            z_pelvis_up_aperture_1, z_pelvis_low_aperture_1 = self.hug_the_isocenter(body_iso[1])
+            z_pelvis_up_aperture_2 = body_iso[0][2] + z_shoulder_low_aperture_2 - body_iso[1][2] + 30
+        else:
+            z_thorax_up_aperture_1, z_thorax_low_aperture_1 = self.hug_the_isocenter(body_iso[1])
+            z_thorax_up_aperture_2 = head_iso[2] + head_fields[2][0] -body_iso[0][2]  + 30
+            z_thorax_low_aperture_2 = body_iso[1][2] - body_iso[0][2] + 40 #STUBBED TO DO
+            body_fields.append((z_thorax_up_aperture_1, z_thorax_up_aperture_2,))
+            body_fields.append((-200, 200))
+            body_fields.append((z_thorax_low_aperture_2, z_thorax_low_aperture_1,))
+            body_fields.append((-200, 200))
 
-        body_fields.append((z_shoulder_up_aperture_1, z_shoulder_up_aperture_2,))
-        body_fields.append((-200, 200))
-        body_fields.append((z_shoulder_low_aperture_2, z_shoulder_low_aperture_1,))
-        body_fields.append((-200, 200))
+            z_abd_up_aperture_1, z_abd_low_aperture_1 = self.hug_the_isocenter(body_iso[1])
+            z_abd_up_aperture_2 = body_iso[0][2] + z_thorax_low_aperture_2 -body_iso[1][2]  + 30
+            z_abd_low_aperture_2 = body_iso[2][2] - body_iso[1][2] + 40 #STUBBED TO DO #STUBBED TO DO
+            body_fields.append((z_abd_up_aperture_1, z_abd_up_aperture_2,))
+            body_fields.append((-200, 200))
+            body_fields.append((z_abd_low_aperture_2, z_abd_low_aperture_1,))
+            body_fields.append((-200, 200))
 
-        z_pelvis_up_aperture_1, z_pelvis_low_aperture_1 = self.hug_the_isocenter(body_iso[1])
-        z_pelvis_up_aperture_2 = body_iso[0][2] + z_shoulder_low_aperture_2 - body_iso[1][2] + 30
+            z_pelvis_up_aperture_1, z_pelvis_low_aperture_1 = self.hug_the_isocenter(body_iso[2])
+            z_pelvis_up_aperture_2 = body_iso[1][2] + z_abd_low_aperture_2 - body_iso[2][2] + 30
+
         z_pelvis_low_aperture_2 = -150 #STUBBED
-
         body_fields.append((z_pelvis_up_aperture_1, z_pelvis_up_aperture_2,))
         body_fields.append((-200, 200))
         body_fields.append((z_pelvis_low_aperture_2, z_pelvis_low_aperture_1,))
@@ -184,17 +214,18 @@ class IsoGeometry(Patient):
         
         return arms_fields
     
-    def get_legs_fields(self,): 
+    def get_legs_fields(self, arms): 
         """
         Find the legs fields from the keypoints
         """
         legs_fields = []
         legs_iso = self.get_legs_isocenters()
-        body_fields = self.get_body_fields()
-        body_iso = self.get_body_isocenters()
+        body_fields = self.get_body_fields(arms)
+        body_iso = self.get_body_isocenters(arms)
 
         z_legs_up_aperture_1, z_legs_low_aperture_1 = self.hug_the_isocenter(legs_iso[0])
-        z_legs_up_aperture_2 = body_iso[-1][2] + body_fields[-2][0] - legs_iso[0][2] + 50
+        
+        z_legs_up_aperture_2 = body_iso[-1][2] + body_fields[-2][0] - legs_iso[0][2] + 30
         z_legs_low_aperture_2 = np.mean(self.mesh_or.vertices[self.find_min_ptv()][:,2]) - legs_iso[0][2] + 5
 
         legs_fields.append((z_legs_up_aperture_1, z_legs_up_aperture_2,))
@@ -210,10 +241,10 @@ class IsoGeometry(Patient):
         """
         fields_list = []
         fields_list = fields_list + self.get_head_fields()
-        fields_list = fields_list + self.get_body_fields()
+        fields_list = fields_list + self.get_body_fields(arms)
         if arms == True:
             fields_list = fields_list + self.get_arms_fields()
-        fields_list = fields_list + self.get_legs_fields()
+        fields_list = fields_list + self.get_legs_fields(arms)
         self.fields = fields_list
         return self.fields
     
@@ -243,7 +274,7 @@ class IsoGeometry(Patient):
                 rmse = mean_squared_error(predicted, self.or_isocenters, squared=False)
             self.iso_RMSE = rmse
         else:
-            rmse = mean_squared_error(predicted, self.or_isocenters[0], squared=False)
+            rmse = mean_squared_error(predicted, self.or_isocenters, squared=False)
             self.iso_RMSE = rmse
 
         return  rmse
@@ -253,8 +284,16 @@ class IsoGeometry(Patient):
         Calculate the rmse between the original fields and the predicted
         """
         if self.arms == arms:
+
             rmse = mean_squared_error(predicted, self.or_fields, squared=False)
             self.field_RMSE = rmse
+
+        else:
+            #rmse = mean_squared_error(predicted, self.or_fields, squared=False)
+            print ( " COME CI SONO FINITO QUA?") #STUBBED
+            rmse = 404
+            self.field_RMSE = rmse
+            
         return rmse
     
     def rmse(self, P_iso, P_fields, arms):
@@ -266,7 +305,7 @@ class IsoGeometry(Patient):
         
         if len(self.isocenters) !=  len(self.or_isocenters):
             warnings.warn("\033[33m[DeformationTMI WARNING]\033[0m" + "Can't calculate the RMSE, the template and the patinet have a different geometry plan")
-            return [38808,38808]
+            return [999,999]
 
         rmse = []
         print("The total 2D RMSE is: ", self.iso_rmse(P_iso, arms, Two_Dim = True), "+", self.field_rmse(P_fields, arms), "=", self.iso_RMSE + self.field_RMSE)
