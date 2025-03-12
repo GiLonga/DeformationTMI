@@ -172,6 +172,12 @@ class Processing():
                     }
 
         return pat_dict
+    def world_to_voxel(coord, x_min, y_min, z_min, dx, dy, dz):
+        """Convert real-world (x, y, z) coordinates to voxel indices"""
+        i = int((coord[0] - x_min) / dx)
+        j = int((coord[1] - y_min) / dy)
+        k = int((coord[2] - z_min) / dz)
+        return i, j, k
         
 if __name__ == "__main__":
     process = Processing(20000)
